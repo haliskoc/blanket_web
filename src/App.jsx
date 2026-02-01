@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Play, Pause, RotateCcw, Settings, X,
   Plus, Check, Trash2, PieChart, BarChart2,
-  Tag, Clock, Calendar
+  Tag, Clock, Calendar, CloudRain, TreePine,
+  Coffee, Wind, Moon, Sun, Library, Image as ImageIcon
 } from 'lucide-react';
 import { Howl } from 'howler';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Cell
+  ResponsiveContainer
 } from 'recharts';
 import confetti from 'canvas-confetti';
 import './App.css';
@@ -16,39 +17,32 @@ import './App.css';
 const SOUND_BASE_URL = 'https://raw.githubusercontent.com/rafaelmardojai/blanket/master/data/resources/sounds/';
 
 const SOUNDS = [
-  { id: 'rain', label: 'Rain', filename: 'rain.ogg' },
-  { id: 'storm', label: 'Storm', filename: 'storm.ogg' },
-  { id: 'wind', label: 'Wind', filename: 'wind.ogg' },
-  { id: 'waves', label: 'Waves', filename: 'waves.ogg' },
-  { id: 'stream', label: 'Stream', filename: 'stream.ogg' },
-  { id: 'birds', label: 'Birds', filename: 'birds.ogg' },
-  { id: 'summer-night', label: 'Night', filename: 'summer-night.ogg' },
-  { id: 'fireplace', label: 'Fire', filename: 'fireplace.ogg' },
-  { id: 'coffee-shop', label: 'Cafe', filename: 'coffee-shop.ogg' },
-  { id: 'city', label: 'City', filename: 'city.ogg' },
-  { id: 'train', label: 'Train', filename: 'train.ogg' },
-  { id: 'boat', label: 'Boat', filename: 'boat.ogg' },
-  { id: 'white-noise', label: 'White', filename: 'white-noise.ogg' },
-  { id: 'pink-noise', label: 'Pink', filename: 'pink-noise.ogg' },
+  { id: 'rain', label: 'Rain', filename: 'rain.ogg', icon: <CloudRain size={20} /> },
+  { id: 'storm', label: 'Storm', filename: 'storm.ogg', icon: <Wind size={20} /> },
+  { id: 'wind', label: 'Wind', filename: 'wind.ogg', icon: <Wind size={20} /> },
+  { id: 'waves', label: 'Waves', filename: 'waves.ogg', icon: <ImageIcon size={20} /> },
+  { id: 'stream', label: 'Stream', filename: 'stream.ogg', icon: <ImageIcon size={20} /> },
+  { id: 'birds', label: 'Birds', filename: 'birds.ogg', icon: <TreePine size={20} /> },
+  { id: 'fireplace', label: 'Fire', filename: 'fireplace.ogg', icon: <Sun size={20} /> },
+  { id: 'coffee-shop', label: 'Cafe', filename: 'coffee-shop.ogg', icon: <Coffee size={20} /> },
+  { id: 'city', label: 'City', filename: 'city.ogg', icon: <ImageIcon size={20} /> },
+  { id: 'train', label: 'Train', filename: 'train.ogg', icon: <ImageIcon size={20} /> },
+  { id: 'library', label: 'Library', filename: 'white-noise.ogg', icon: <Library size={20} /> },
 ];
 
 const THEMES = [
-  { id: 'default', label: 'Zen Dark' },
+  { id: 'default', label: 'Deep Zen' },
   { id: 'nature', label: 'Forest' },
   { id: 'mountain', label: 'Mountain' },
   { id: 'sea', label: 'Ocean' },
   { id: 'city', label: 'Night City' },
   { id: 'space', label: 'Starry Sky' },
-  { id: 'cozy', label: 'Cozy Room' },
   { id: 'rain', label: 'Rainy Day' },
-  { id: 'coffee', label: 'Coffee Shop' },
-  { id: 'library', label: 'Library' },
-  { id: 'desert', label: 'Desert' },
-  { id: 'sunset', label: 'Sunset' },
+  { id: 'coffee', label: 'Coffee House' },
   { id: 'cyberpunk', label: 'Neon' },
 ];
 
-const PROJECTS = ['Deep Focus', 'Coding', 'Design', 'Reading', 'Writing', 'Study'];
+const PROJECTS = ['Deep Focus', 'Coding', 'Design', 'Reading', 'Study'];
 
 function App() {
   const [mode, setMode] = useState('FOCUS');
@@ -59,9 +53,6 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(durations.FOCUS * 60);
   const [isActive, setIsActive] = useState(false);
   const [activeSounds, setActiveSounds] = useState({});
-  const [soundVolumes, setSoundVolumes] = useState(
-    SOUNDS.reduce((acc, s) => ({ ...acc, [s.id]: 0.5 }), {})
-  );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('default');
   const [currentProject, setCurrentProject] = useState('Deep Focus');
@@ -72,7 +63,6 @@ function App() {
   });
   const [todoInput, setTodoInput] = useState('');
 
-  // Stats State
   const [dailyStats, setDailyStats] = useState(() => {
     const saved = localStorage.getItem('podomodro-stats');
     return saved ? JSON.parse(saved) : {};
@@ -80,13 +70,12 @@ function App() {
 
   const soundInstances = useRef({});
 
-  // Rain Effect Drops
   const [rainDrops] = useState(() =>
-    Array.from({ length: 50 }).map((_, i) => ({
+    Array.from({ length: 40 }).map((_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
       delay: `${Math.random() * 2}s`,
-      duration: `${0.5 + Math.random() * 0.5}s`
+      duration: `${0.6 + Math.random() * 0.4}s`
     }))
   );
 
@@ -106,7 +95,6 @@ function App() {
     }
   }, [durations, mode, isActive]);
 
-  // Timer logic
   useEffect(() => {
     let interval = null;
     if (isActive && timeLeft > 0) {
@@ -122,16 +110,8 @@ function App() {
   }, [isActive, timeLeft]);
 
   const handleSessionComplete = () => {
-    // Play sound
     new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'] }).play();
-
-    // Confetti!
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#ffffff', '#a1a1a1', '#525252']
-    });
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff4d4d', '#ffffff'] });
 
     if (mode === 'FOCUS') {
       const today = new Date().toISOString().split('T')[0];
@@ -165,22 +145,10 @@ function App() {
       setActiveSounds(prev => ({ ...prev, [soundId]: false }));
     } else {
       if (!soundInstances.current[soundId]) {
-        soundInstances.current[soundId] = new Howl({
-          src: [url],
-          loop: true,
-          volume: soundVolumes[soundId],
-          format: ['ogg']
-        });
+        soundInstances.current[soundId] = new Howl({ src: [url], loop: true, volume: 0.5, format: ['ogg'] });
       }
       soundInstances.current[soundId].play();
       setActiveSounds(prev => ({ ...prev, [soundId]: true }));
-    }
-  };
-
-  const updateVolume = (soundId, volume) => {
-    setSoundVolumes(prev => ({ ...prev, [soundId]: volume }));
-    if (soundInstances.current[soundId]) {
-      soundInstances.current[soundId].volume(volume);
     }
   };
 
@@ -190,39 +158,26 @@ function App() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Stats Data Prep
   const statsData = Object.entries(dailyStats).slice(-7).map(([date, data]) => ({
-    name: date.split('-').slice(1).join('/'),
+    name: date.split('-')[2],
     count: data.count,
   }));
-
-  const currentProjectData = dailyStats[new Date().toISOString().split('T')[0]]?.projects || {};
-  const projectChartData = Object.entries(currentProjectData).map(([name, value]) => ({ name, value }));
 
   return (
     <div className="app-wrapper">
       <div className="rain-overlay">
         {rainDrops.map(drop => (
-          <div
-            key={drop.id}
-            className="drop"
-            style={{ left: drop.left, animationDelay: drop.delay, animationDuration: drop.duration }}
-          />
+          <div key={drop.id} className="drop" style={{ left: drop.left, animationDelay: drop.delay, animationDuration: drop.duration }} />
         ))}
       </div>
 
-      <section className="timer-section glass-section">
-        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} style={{ color: '#fff' }}>Podomodro</motion.h1>
-
-        <div className="mode-switcher">
-          {Object.keys(durations).map((key) => (
-            <button key={key} className={`mode-btn ${mode === key ? 'active' : ''}`} onClick={() => changeMode(key)}>
-              {key === 'FOCUS' ? 'Focus' : key === 'SHORT' ? 'Short' : 'Long'}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ marginBottom: 24, opacity: 0.6 }}>
+      <motion.div
+        className="premium-card"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <Tag size={16} color="#94a3b8" />
           <select
             className="project-select"
             value={currentProject}
@@ -230,163 +185,129 @@ function App() {
           >
             {PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
+          <div style={{ width: 16 }} />
+        </div>
+
+        <div className="mode-switcher">
+          {Object.keys(durations).map((key) => (
+            <button
+              key={key}
+              className={`mode-btn ${mode === key ? 'active' : ''}`}
+              onClick={() => changeMode(key)}
+            >
+              {key === 'FOCUS' ? 'Focus' : key === 'SHORT' ? 'Short' : 'Long'}
+            </button>
+          ))}
         </div>
 
         <motion.div
           className="timer-display"
-          animate={{ scale: isActive ? 1.05 : 1 }}
+          animate={{ scale: isActive ? 1.02 : 1 }}
         >
           {formatTime(timeLeft)}
         </motion.div>
 
         <div className="timer-controls">
-          <button className="icon-btn" onClick={resetTimer}><RotateCcw size={24} /></button>
+          <button className="icon-btn" onClick={resetTimer}><RotateCcw size={20} /></button>
           <button className="play-pause-btn" onClick={toggleTimer}>
-            {isActive ? <Pause size={32} /> : <Play size={32} style={{ marginLeft: 4 }} />}
+            {isActive ? <Pause size={30} fill="currentColor" /> : <Play size={30} fill="currentColor" style={{ marginLeft: 4 }} />}
           </button>
-          <button className="icon-btn" onClick={() => setIsSettingsOpen(true)}><Settings size={24} /></button>
+          <button className="icon-btn" onClick={() => setIsSettingsOpen(true)}><Settings size={20} /></button>
         </div>
-      </section>
 
-      <section className="secondary-grid">
-        <div className="mixer-column glass-section">
-          <h3 className="grid-title" style={{ color: '#fff', opacity: 0.8 }}>Atmosfera</h3>
-          <div className="sound-list">
-            {SOUNDS.map(sound => (
-              <div key={sound.id} className={`sound-item ${activeSounds[sound.id] ? 'active' : ''}`}>
-                <div className="sound-header" onClick={() => toggleSound(sound.id, sound.filename)}>
-                  <span>{sound.label}</span>
+        <div className="sound-list">
+          {SOUNDS.map(sound => (
+            <div key={sound.id} className={`sound-item ${activeSounds[sound.id] ? 'active' : ''}`} onClick={() => toggleSound(sound.id, sound.filename)}>
+              {sound.icon}
+              <span>{sound.label}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      <div className="secondary-section">
+        <motion.div className="mini-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <h3 className="section-title"><Check size={18} /> Tasks</h3>
+          <div className="todo-input-group">
+            <input
+              className="todo-input"
+              placeholder="What needs to be done?"
+              value={todoInput}
+              onChange={(e) => setTodoInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && todoInput.trim()) {
+                  setTodos([{ id: Date.now(), text: todoInput, completed: false, project: currentProject }, ...todos]);
+                  setTodoInput('');
+                }
+              }}
+            />
+          </div>
+          <div className="todo-list">
+            {todos.slice(0, 3).map(todo => (
+              <div key={todo.id} className="todo-item-minimal">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div className={`todo-check-btn ${todo.completed ? 'checked' : ''}`} onClick={() => setTodos(todos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))} />
+                  <span style={{ opacity: todo.completed ? 0.4 : 1, textDecoration: todo.completed ? 'line-through' : 'none' }}>{todo.text}</span>
                 </div>
-                {activeSounds[sound.id] && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <input
-                      type="range" min="0" max="1" step="0.01"
-                      className="volume-slider"
-                      value={soundVolumes[sound.id]}
-                      onChange={(e) => updateVolume(sound.id, parseFloat(e.target.value))}
-                    />
-                  </motion.div>
-                )}
+                <button className="icon-btn" style={{ width: 30, height: 30 }} onClick={() => setTodos(todos.filter(t => t.id !== todo.id))}><Trash2 size={12} /></button>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="todo-column glass-section">
-          <h3 className="grid-title" style={{ color: '#fff', opacity: 0.8 }}>Tasks</h3>
-          <div className="todo-container">
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              if (todoInput.trim()) {
-                setTodos([{ id: Date.now(), text: todoInput, completed: false, project: currentProject }, ...todos]);
-                setTodoInput('');
-              }
-            }} className="todo-add-group">
-              <input
-                className="todo-input"
-                placeholder="Next goal..."
-                value={todoInput}
-                onChange={(e) => setTodoInput(e.target.value)}
-              />
-              <button type="submit" className="icon-btn"><Plus size={20} /></button>
-            </form>
-            <div className="todo-list-minimal">
-              <AnimatePresence initial={false}>
-                {todos.map(todo => (
-                  <motion.div key={todo.id} className={`todo-item-minimal ${todo.completed ? 'completed' : ''}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div className={`todo-check-btn ${todo.completed ? 'checked' : ''}`} onClick={() => setTodos(todos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))}>
-                        {todo.completed && <Check size={12} color="black" />}
-                      </div>
-                      <span>{todo.text}</span>
-                      <span className="project-tag">{todo.project}</span>
-                    </div>
-                    <button className="icon-btn" onClick={() => setTodos(todos.filter(t => t.id !== todo.id))}><Trash2 size={14} /></button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+        <motion.div className="mini-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          <h3 className="section-title"><BarChart2 size={18} /> Performance</h3>
+          <div style={{ height: 120 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={statsData}>
+                <Bar dataKey="count" fill="var(--accent-red)" radius={[4, 4, 0, 0]} />
+                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ background: '#1a1a2e', border: 'none', borderRadius: '10px' }} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        </div>
-      </section>
-
-      <section className="stats-panel glass-section">
-        <h3 className="grid-title" style={{ color: '#fff', opacity: 0.8 }}>Insights</h3>
-        <div className="analytics-grid">
-          <div className="stat-card">
-            <span className="settings-label">Last 7 Days (Sessions)</span>
-            <div style={{ height: 200, marginTop: 20 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={statsData}>
-                  <XAxis dataKey="name" hide />
-                  <Tooltip
-                    contentStyle={{ background: '#171717', border: '1px solid #262626', borderRadius: '12px', fontSize: '12px' }}
-                    itemStyle={{ color: '#ededed' }}
-                  />
-                  <Bar dataKey="count" fill="var(--text-primary)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <span className="settings-label">Today by Project</span>
-            <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {PROJECTS.map(p => {
-                const count = currentProjectData[p] || 0;
-                const max = Math.max(...Object.values(currentProjectData), 1);
-                return (
-                  <div key={p} style={{ fontSize: '0.8rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span>{p}</span>
-                      <span>{count} sessions</span>
-                    </div>
-                    <div style={{ height: 4, background: 'var(--border)', borderRadius: 2 }}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(count / max) * 100}%` }}
-                        style={{ height: '100%', background: 'var(--text-primary)', borderRadius: 2 }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
+        </motion.div>
+      </div>
 
       <AnimatePresence>
         {isSettingsOpen && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSettingsOpen(false)}>
-            <motion.div className="modal-content-minimal" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} onClick={e => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 32 }}>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 500 }}>Settings</h2>
-                <button className="icon-btn" onClick={() => setIsSettingsOpen(false)}><X size={24} /></button>
+            <motion.div className="modal-content-minimal" onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 30 }}>
+                <h2>Settings</h2>
+                <button className="icon-btn" onClick={() => setIsSettingsOpen(false)}><X size={20} /></button>
               </div>
 
-              <div className="settings-group">
-                <span className="settings-label">Durations (min)</span>
-                <div className="duration-inputs">
-                  {Object.keys(durations).map(k => (
-                    <div key={k} className="duration-field">
-                      <label>{k}</label>
-                      <input type="number" value={durations[k]} onChange={(e) => setDurations({ ...durations, [k]: parseInt(e.target.value) || 0 })} />
-                    </div>
-                  ))}
-                </div>
+              <div style={{ marginBottom: 30 }}>
+                <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: 15, textTransform: 'uppercase' }}>Focus Duration</p>
+                <input
+                  type="range" min="1" max="60"
+                  value={durations.FOCUS}
+                  onChange={(e) => setDurations({ ...durations, FOCUS: parseInt(e.target.value) })}
+                  style={{ width: '100%' }}
+                />
+                <div style={{ textAlign: 'right', marginTop: 5 }}>{durations.FOCUS}m</div>
               </div>
 
-              <div className="settings-group">
-                <span className="settings-label">Atmosphere</span>
-                <div className="theme-grid">
-                  {THEMES.map(theme => (
-                    <div key={theme.id} className={`theme-opt ${currentTheme === theme.id ? 'active' : ''}`} onClick={() => setCurrentTheme(theme.id)}>{theme.label}</div>
-                  ))}
-                </div>
+              <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: 15, textTransform: 'uppercase' }}>Themes</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                {THEMES.map(t => (
+                  <div
+                    key={t.id}
+                    className={`theme-opt ${currentTheme === t.id ? 'active' : ''}`}
+                    onClick={() => setCurrentTheme(t.id)}
+                    style={{ padding: '10px', fontSize: '0.7rem', border: '1px solid var(--card-border)', borderRadius: '12px', textAlign: 'center', cursor: 'pointer' }}
+                  >
+                    {t.label}
+                  </div>
+                ))}
               </div>
 
-              <button className="close-btn" style={{ width: '100%', padding: 16, background: 'var(--text-primary)', color: 'var(--bg-primary)', borderRadius: 12, fontWeight: 600, border: 'none' }} onClick={() => setIsSettingsOpen(false)}>Save</button>
+              <button
+                style={{ width: '100%', padding: '15px', marginTop: '30px', borderRadius: '15px', border: 'none', background: 'white', color: 'black', fontWeight: '600' }}
+                onClick={() => setIsSettingsOpen(false)}
+              >
+                Done
+              </button>
             </motion.div>
           </motion.div>
         )}
