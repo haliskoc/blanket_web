@@ -1,16 +1,68 @@
-# React + Vite
+# 🧘 Podomodro
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Podomodro**, derin odaklanma ve üretkenlik için tasarlanmış, minimalist bir Pomodoro zamanlayıcı ve ortam sesi karıştırıcısıdır. Göz yormayan "Zen" tasarımı, gerçekçi atmosferleri ve gelişmiş istatistik paneli ile çalışma alışkanlıklarınızı bir üst seviyeye taşır.
 
-Currently, two official plugins are available:
+![Podomodro Preview](https://github.com/haliskoc/blanket_web/raw/main/public/preview.png) *(Görsel eklendiğinde aktif olacaktır)*
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Öne Çıkan Özellikler
 
-## React Compiler
+### 🌑 Ultra-Minimalist "Zen" Tasarımı
+Gereksiz tüm görsel kalabalıktan arındırılmış, tipografi odaklı ve akıcı animasyonlarla desteklenmiş premium bir arayüz.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🔊 14 Yüksek Kaliteli Ortam Sesi (Blanket Sounds)
+[Blanket](https://github.com/rafaelmardojai/blanket) projesinden entegre edilen 14 farklı doğa ve şehir sesi.
+- **Mikser Özelliği:** Her sesin seviyesini ayrı ayrı ayarlayarak kendi ideal çalışma atmosferinizi yaratın.
+- **Sesler:** Yağmur, Fırtına, Rüzgar, Dalgalar, Akarsu, Kuşlar, Yaz Gecesi, Şömine, Kafe, Şehir, Tren, Tekne, Beyaz/Pembe Gürültü.
 
-## Expanding the ESLint configuration
+### 🖼️ Gerçekçi Atmosfer Temaları
+- **Dynamic Zen Rain:** Yağmur temasında ekranda süzülen gerçek zamanlı dijital yağmur damlaları.
+- **Zengin Kütüphane:** Yıldızlı Gökyüzü, Huzurlu Oda, Kütüphane, Gün Batımı gibi yüksek çözünürlüklü ve odaklanma dostu arka planlar.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 📊 Akıllı İstatistikler ve Takip
+- **Insights:** Son 7 günlük çalışma performansınızı gösteren bar grafikleri.
+- **Proje Bazlı Dağılım:** Hangi projeye (Yazılım, Tasarım, Okuma vb.) ne kadar odaklandığınızı takip edin.
+- **Konfeti Kutlaması:** Her başarılı seans sonunda zarif bir kutlama efekti.
+
+### 📝 Entegre Görev Listesi
+- Görevlerinizi projelerle eşleştirin.
+- Yerel depolama sayesinde sayfayı kapatsanız bile görevleriniz ve istatistikleriniz kaybolmaz.
+
+## 🛠️ Teknoloji Yığını
+
+- **Framework:** React + Vite
+- **Animasyon:** Framer Motion
+- **Ses Yönetimi:** Howler.js
+- **Grafikler:** Recharts
+- **İkonlar:** Lucide React
+- **Efektler:** Canvas Confetti
+
+## 🚀 Kurulum
+
+Projeyi yerel bilgisayarınızda çalıştırmak için:
+
+1. Depoyu klonlayın:
+```bash
+git clone https://github.com/haliskoc/blanket_web.git
+```
+
+2. Proje dizinine gidin:
+```bash
+cd blanket_web
+```
+
+3. Bağımlılıkları yükleyin:
+```bash
+npm install
+```
+
+4. Geliştirme sunucusunu başlatın:
+```bash
+npm run dev
+```
+
+## 🔐 Gizlilik
+Podomodro, gizliliğinize önem verir. Tüm çalışma istatistikleriniz, görevleriniz ve ayarlarınız sadece tarayıcınızın **Local Storage** alanında saklanır. Hiçbir veri harici bir sunucuya gönderilmez.
+
+---
+
+*Halis Koç tarafından tutkuyla geliştirildi.*
