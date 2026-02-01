@@ -419,3 +419,84 @@ body.theme-rain .rain-overlay {
   border-radius: 40px;
   padding: 40px;
 }
+
+/* Tablet & Mobile Responsiveness */
+@media (max-width: 1024px) {
+  .app-wrapper {
+    max-width: 95%;
+    padding: 20px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .timer-display {
+    font-size: 7.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .premium-card {
+    padding: 40px 30px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .sound-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 20px 10px;
+  }
+
+  .timer-display {
+    font-size: 5rem;
+  }
+
+  .premium-card {
+    padding: 30px 20px;
+    border-radius: 30px;
+  }
+
+  .timer-controls {
+    gap: 15px;
+    margin-bottom: 3rem;
+  }
+
+  .play-pause-btn {
+    width: 64px;
+    height: 64px;
+  }
+
+  .play-pause-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sound-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .mode-btn {
+    font-size: 0.75rem;
+    padding: 10px 5px;
+  }
+
+  .mode-switcher {
+    margin-bottom: 2.5rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+}
