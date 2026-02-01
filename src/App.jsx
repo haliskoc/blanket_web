@@ -16,7 +16,7 @@ const MODES = {
   LONG: { label: 'Long Break', minutes: 15, color: 'var(--accent-long)' },
 };
 
-const SOUND_BASE_URL = 'https://raw.githubusercontent.com/rafaelmardojai/blanket/main/data/resources/sounds/';
+const SOUND_BASE_URL = 'https://raw.githubusercontent.com/rafaelmardojai/blanket/master/data/resources/sounds/';
 
 const SOUNDS = [
   { id: 'rain', label: 'Rain', icon: <CloudRain />, filename: 'rain.ogg' },
