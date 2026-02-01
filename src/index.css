@@ -4,15 +4,15 @@
   --font-main: 'Outfit', sans-serif;
 
   /* Premium Dark Theme */
-  --bg-deep: #12121e;
-  --card-bg: rgba(255, 255, 255, 0.03);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --accent-red: #ff4d4d;
+  --bg-deep: #08080c;
+  --card-bg: rgba(255, 255, 255, 0.02);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --accent-red: #ff3b3b;
   --text-main: #ffffff;
-  --text-dim: #94a3b8;
+  --text-dim: rgba(255, 255, 255, 0.4);
 
-  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  --glass-blur: blur(40px);
+  --transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --glass-blur: blur(30px);
 }
 
 * {
@@ -173,14 +173,35 @@ h1 {
 
 /* Timer Display */
 .timer-display {
-  font-size: 8.5rem;
-  font-weight: 600;
-  color: var(--accent-red);
-  line-height: 1;
-  margin-bottom: 3rem;
+  font-size: 9.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 0.9;
+  margin-bottom: 3.5rem;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
-  text-shadow: 0 0 30px rgba(255, 77, 77, 0.15);
+  letter-spacing: -0.06em;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.1));
+}
+
+.is-running .timer-display {
+  animation: timer-pulse 2s infinite ease-in-out;
+}
+
+@keyframes timer-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Controls */
@@ -252,9 +273,9 @@ h1 {
 
 .sound-item {
   aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.01);
   border: 1px solid var(--card-border);
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -265,9 +286,15 @@ h1 {
   transition: var(--transition);
 }
 
+.sound-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-4px);
+}
+
 .sound-item.active {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--accent-red);
+  background: var(--text-main);
+  border-color: var(--text-main);
+  color: var(--bg-deep);
 }
 
 .sound-item span {
@@ -276,7 +303,7 @@ h1 {
 }
 
 .sound-item.active span {
-  color: var(--text-main);
+  color: var(--bg-deep);
 }
 
 /* Todo & Stats Section (Secondary) */
