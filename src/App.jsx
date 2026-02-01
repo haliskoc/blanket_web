@@ -1,48 +1,44 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Play, Pause, RotateCcw, Settings, X,
-  CloudRain, TreePine, Coffee, Wind,
-  Bird, Ship, Building, Flame, Zap,
-  Droplets, Moon, Train, Waves, Volume2,
-  Plus, Check, Trash2
+  Plus, Check, Trash2, ArrowRight
 } from 'lucide-react';
 import { Howl } from 'howler';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
 const MODES = {
-  FOCUS: { label: 'Focus', minutes: 25, color: 'var(--accent-focus)' },
-  SHORT: { label: 'Short Break', minutes: 5, color: 'var(--accent-break)' },
-  LONG: { label: 'Long Break', minutes: 15, color: 'var(--accent-long)' },
+  FOCUS: { label: 'Focus', minutes: 25 },
+  SHORT: { label: 'Short Break', minutes: 5 },
+  LONG: { label: 'Long Break', minutes: 15 },
 };
 
 const SOUND_BASE_URL = 'https://raw.githubusercontent.com/rafaelmardojai/blanket/master/data/resources/sounds/';
 
 const SOUNDS = [
-  { id: 'rain', label: 'Rain', icon: <CloudRain />, filename: 'rain.ogg' },
-  { id: 'storm', label: 'Storm', icon: <Zap />, filename: 'storm.ogg' },
-  { id: 'wind', label: 'Wind', icon: <Wind />, filename: 'wind.ogg' },
-  { id: 'waves', label: 'Waves', icon: <Waves />, filename: 'waves.ogg' },
-  { id: 'stream', label: 'Stream', icon: <Droplets />, filename: 'stream.ogg' },
-  { id: 'birds', label: 'Birds', icon: <Bird />, filename: 'birds.ogg' },
-  { id: 'summer-night', label: 'Night', icon: <Moon />, filename: 'summer-night.ogg' },
-  { id: 'fireplace', label: 'Fire', icon: <Flame />, filename: 'fireplace.ogg' },
-  { id: 'coffee-shop', label: 'Cafe', icon: <Coffee />, filename: 'coffee-shop.ogg' },
-  { id: 'city', label: 'City', icon: <Building />, filename: 'city.ogg' },
-  { id: 'train', label: 'Train', icon: <Train />, filename: 'train.ogg' },
-  { id: 'boat', label: 'Boat', icon: <Ship />, filename: 'boat.ogg' },
-  { id: 'white-noise', label: 'White noise', icon: <Volume2 />, filename: 'white-noise.ogg' },
-  { id: 'pink-noise', label: 'Pink noise', icon: <Volume2 />, filename: 'pink-noise.ogg' },
+  { id: 'rain', label: 'Rain', filename: 'rain.ogg' },
+  { id: 'storm', label: 'Storm', filename: 'storm.ogg' },
+  { id: 'wind', label: 'Wind', filename: 'wind.ogg' },
+  { id: 'waves', label: 'Waves', filename: 'waves.ogg' },
+  { id: 'stream', label: 'Stream', filename: 'stream.ogg' },
+  { id: 'birds', label: 'Birds', filename: 'birds.ogg' },
+  { id: 'summer-night', label: 'Night', filename: 'summer-night.ogg' },
+  { id: 'fireplace', label: 'Fire', filename: 'fireplace.ogg' },
+  { id: 'coffee-shop', label: 'Cafe', filename: 'coffee-shop.ogg' },
+  { id: 'city', label: 'City', filename: 'city.ogg' },
+  { id: 'train', label: 'Train', filename: 'train.ogg' },
+  { id: 'boat', label: 'Boat', filename: 'boat.ogg' },
+  { id: 'white-noise', label: 'White', filename: 'white-noise.ogg' },
+  { id: 'pink-noise', label: 'Pink', filename: 'pink-noise.ogg' },
 ];
 
 const THEMES = [
-  { id: 'default', label: 'Deep Ocean' },
-  { id: 'cyberpunk', label: 'Neo Grid' },
-  { id: 'nature', label: 'Deep Forest' },
-  { id: 'mountain', label: 'High Peaks' },
-  { id: 'sea', label: 'Calm Waves' },
-  { id: 'city', label: 'Night City' },
-  { id: 'geometry', label: 'Abstract' },
+  { id: 'default', label: 'Zen Dark' },
+  { id: 'nature', label: 'Forest' },
+  { id: 'mountain', label: 'Mountain' },
+  { id: 'sea', label: 'Ocean' },
+  { id: 'city', label: 'City' },
+  { id: 'cyberpunk', label: 'Neon' },
 ];
 
 function App() {
@@ -63,17 +59,14 @@ function App() {
 
   const soundInstances = useRef({});
 
-  // Sync todos to localStorage
   useEffect(() => {
     localStorage.setItem('podomodro-todos', JSON.stringify(todos));
   }, [todos]);
 
-  // Sync theme with body class
   useEffect(() => {
     document.body.className = `theme-${currentTheme}`;
   }, [currentTheme]);
 
-  // Timer logic
   useEffect(() => {
     let interval = null;
     if (isActive && timeLeft > 0) {
@@ -140,127 +133,114 @@ function App() {
     setTodoInput('');
   };
 
-  const toggleTodo = (id) => {
-    setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
-  };
-
-  const deleteTodo = (id) => {
-    setTodos(todos.filter(t => t.id !== id));
-  };
-
   return (
-    <>
-      <div className={`container glass ${isActive ? 'is-running' : ''}`}>
-        <div className="main-panel">
-          <h1>Podomodro</h1>
+    <div className="app-wrapper">
+      <section className="timer-section">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 0.5, y: 0 }}
+        >
+          Podomodro
+        </motion.h1>
 
-          <div className="mode-switcher">
-            {Object.entries(MODES).map(([key, value]) => (
-              <button
-                key={key}
-                className={`mode-btn ${mode === key ? 'active' : ''}`}
-                onClick={() => changeMode(key)}
-                style={mode === key ? { borderBottom: `2px solid ${value.color}` } : {}}
-              >
-                {value.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="timer-display" style={{ color: MODES[mode].color }}>
-            {formatTime(timeLeft)}
-          </div>
-
-          <div className="controls">
-            <button className="secondary-btn" onClick={resetTimer}>
-              <RotateCcw size={20} />
+        <div className="mode-switcher">
+          {Object.entries(MODES).map(([key, value]) => (
+            <button
+              key={key}
+              className={`mode-btn ${mode === key ? 'active' : ''}`}
+              onClick={() => changeMode(key)}
+            >
+              {value.label}
             </button>
-            <button className="main-btn" onClick={toggleTimer}>
-              {isActive ? <Pause size={32} /> : <Play size={32} fill="currentColor" />}
-            </button>
-            <button className="secondary-btn" onClick={() => setIsSettingsOpen(true)}>
-              <Settings size={20} />
-            </button>
-          </div>
+          ))}
+        </div>
 
-          <div className="sound-grid">
-            {SOUNDS.map((sound) => (
-              <div
-                key={sound.id}
-                className={`sound-card glass ${activeSounds[sound.id] ? 'active' : ''}`}
-              >
-                <button onClick={() => toggleSound(sound.id, sound.filename)}>
-                  {sound.icon}
+        <motion.div
+          className="timer-display"
+          animate={{ scale: isActive ? 1.05 : 1 }}
+          transition={{ type: 'spring', stiffness: 100 }}
+        >
+          {formatTime(timeLeft)}
+        </motion.div>
+
+        <div className="timer-controls">
+          <button className="icon-btn" onClick={resetTimer}>
+            <RotateCcw size={24} />
+          </button>
+          <button className="play-pause-btn" onClick={toggleTimer}>
+            {isActive ? <Pause size={32} /> : <Play size={32} style={{ marginLeft: 4 }} />}
+          </button>
+          <button className="icon-btn" onClick={() => setIsSettingsOpen(true)}>
+            <Settings size={24} />
+          </button>
+        </div>
+      </section>
+
+      <section className="secondary-grid">
+        <div className="mixer-column">
+          <h3 className="grid-title">Atmosfera</h3>
+          <div className="sound-list">
+            {SOUNDS.map(sound => (
+              <div key={sound.id} className={`sound-item ${activeSounds[sound.id] ? 'active' : ''}`}>
+                <div className="sound-header" onClick={() => toggleSound(sound.id, sound.filename)}>
                   <span>{sound.label}</span>
-                </button>
-                <div className="volume-slider-container">
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={soundVolumes[sound.id]}
-                    onChange={(e) => updateVolume(sound.id, parseFloat(e.target.value))}
-                    className="volume-slider"
-                  />
                 </div>
+                {activeSounds[sound.id] && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <input
+                      type="range" min="0" max="1" step="0.01"
+                      className="volume-slider"
+                      value={soundVolumes[sound.id]}
+                      onChange={(e) => updateVolume(sound.id, parseFloat(e.target.value))}
+                    />
+                  </motion.div>
+                )}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="todo-section glass">
-          <div className="todo-header">
-            <h3>Focus Tasks</h3>
-          </div>
-
-          <form onSubmit={addTodo} className="todo-input-group">
-            <input
-              type="text"
-              className="todo-input"
-              placeholder="What are you working on?"
-              value={todoInput}
-              onChange={(e) => setTodoInput(e.target.value)}
-            />
-            <button type="submit" className="add-todo-btn">
-              <Plus size={20} />
-            </button>
-          </form>
-
-          <div className="todo-list">
-            <AnimatePresence initial={false}>
-              {todos.map(todo => (
-                <motion.div
-                  key={todo.id}
-                  className={`todo-item ${todo.completed ? 'completed' : ''}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  <div className="todo-content" onClick={() => toggleTodo(todo.id)}>
-                    <div className={`todo-checkbox ${todo.completed ? 'checked' : ''}`}>
-                      {todo.completed && <Check size={14} color="white" />}
+        <div className="todo-column">
+          <h3 className="grid-title">Focus Tasks</h3>
+          <div className="todo-container">
+            <form onSubmit={addTodo} className="todo-add-group">
+              <input
+                className="todo-input"
+                placeholder="Next goal..."
+                value={todoInput}
+                onChange={(e) => setTodoInput(e.target.value)}
+              />
+              <button type="submit" className="icon-btn"><Plus size={20} /></button>
+            </form>
+            <div className="todo-list-minimal">
+              <AnimatePresence initial={false}>
+                {todos.map(todo => (
+                  <motion.div
+                    key={todo.id}
+                    className={`todo-item-minimal ${todo.completed ? 'completed' : ''}`}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div
+                        className={`todo-check-btn ${todo.completed ? 'checked' : ''}`}
+                        onClick={() => setTodos(todos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))}
+                      >
+                        {todo.completed && <Check size={12} color="black" />}
+                      </div>
+                      <span>{todo.text}</span>
                     </div>
-                    <span>{todo.text}</span>
-                  </div>
-                  <button className="delete-todo" onClick={() => deleteTodo(todo.id)}>
-                    <Trash2 size={16} />
-                  </button>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            {todos.length === 0 && (
-              <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '20px', fontSize: '0.9rem' }}>
-                No tasks yet. Add one to stay focused!
-              </p>
-            )}
+                    <button className="icon-btn" onClick={() => setTodos(todos.filter(t => t.id !== todo.id))}>
+                      <Trash2 size={14} />
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
-
-        <p style={{ gridColumn: '1 / -1', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          Mix your favorite sounds and manage your tasks to stay productive.
-        </p>
-      </div>
+      </section>
 
       <AnimatePresence>
         {isSettingsOpen && (
@@ -272,42 +252,33 @@ function App() {
             onClick={() => setIsSettingsOpen(false)}
           >
             <motion.div
-              className="modal-content glass"
+              className="modal-content-minimal"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 style={{ margin: 0 }}>Settings</h2>
-                <button onClick={() => setIsSettingsOpen(false)} style={{ color: 'var(--text-secondary)' }}>
-                  <X size={24} />
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 500 }}>Settings</h2>
+                <button className="icon-btn" onClick={() => setIsSettingsOpen(false)}><X size={24} /></button>
               </div>
-
-              <div style={{ marginBottom: '2rem' }}>
-                <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Appearance</p>
-                <div className="theme-options">
-                  {THEMES.map(theme => (
-                    <button
-                      key={theme.id}
-                      className={`theme-btn ${currentTheme === theme.id ? 'active' : ''}`}
-                      onClick={() => setCurrentTheme(theme.id)}
-                    >
-                      {theme.label}
-                    </button>
-                  ))}
-                </div>
+              <p className="grid-title">Current Theme</p>
+              <div className="theme-grid">
+                {THEMES.map(theme => (
+                  <div
+                    key={theme.id}
+                    className={`theme-opt ${currentTheme === theme.id ? 'active' : ''}`}
+                    onClick={() => setCurrentTheme(theme.id)}
+                  >
+                    {theme.label}
+                  </div>
+                ))}
               </div>
-
-              <button className="close-btn" onClick={() => setIsSettingsOpen(false)}>
-                Done
-              </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
 
