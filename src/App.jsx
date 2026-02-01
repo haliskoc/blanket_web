@@ -459,6 +459,7 @@ function TimerPage() {
           setIsSettingsOpen(false);
           setIsProjectPanelOpen(false);
           setShowNoteInput(false);
+          setIsFocusMode(false);
           break;
       }
     };
