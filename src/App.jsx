@@ -3,7 +3,8 @@ import {
   Play, Pause, RotateCcw, Settings, X,
   CloudRain, TreePine, Coffee, Wind,
   Bird, Ship, Building, Flame, Zap,
-  Droplets, Moon, Train, Waves, Volume2
+  Droplets, Moon, Train, Waves, Volume2,
+  Plus, Check, Trash2
 } from 'lucide-react';
 import { Howl } from 'howler';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,8 +31,8 @@ const SOUNDS = [
   { id: 'city', label: 'City', icon: <Building />, filename: 'city.ogg' },
   { id: 'train', label: 'Train', icon: <Train />, filename: 'train.ogg' },
   { id: 'boat', label: 'Boat', icon: <Ship />, filename: 'boat.ogg' },
-  { id: 'white-noise', label: 'White', icon: <Volume2 />, filename: 'white-noise.ogg' },
-  { id: 'pink-noise', label: 'Pink', icon: <Volume2 />, filename: 'pink-noise.ogg' },
+  { id: 'white-noise', label: 'White noise', icon: <Volume2 />, filename: 'white-noise.ogg' },
+  { id: 'pink-noise', label: 'Pink noise', icon: <Volume2 />, filename: 'pink-noise.ogg' },
 ];
 
 const THEMES = [
@@ -49,9 +50,23 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(MODES.FOCUS.minutes * 60);
   const [isActive, setIsActive] = useState(false);
   const [activeSounds, setActiveSounds] = useState({});
+  const [soundVolumes, setSoundVolumes] = useState(
+    SOUNDS.reduce((acc, s) => ({ ...acc, [s.id]: 0.5 }), {})
+  );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('default');
+  const [todos, setTodos] = useState(() => {
+    const saved = localStorage.getItem('podomodro-todos');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [todoInput, setTodoInput] = useState('');
+
   const soundInstances = useRef({});
+
+  // Sync todos to localStorage
+  useEffect(() => {
+    localStorage.setItem('podomodro-todos', JSON.stringify(todos));
+  }, [todos]);
 
   // Sync theme with body class
   useEffect(() => {
@@ -102,7 +117,7 @@ function App() {
         soundInstances.current[soundId] = new Howl({
           src: [url],
           loop: true,
-          volume: 0.5,
+          volume: soundVolumes[soundId],
           format: ['ogg']
         });
       }
@@ -111,55 +126,139 @@ function App() {
     }
   };
 
+  const updateVolume = (soundId, volume) => {
+    setSoundVolumes(prev => ({ ...prev, [soundId]: volume }));
+    if (soundInstances.current[soundId]) {
+      soundInstances.current[soundId].volume(volume);
+    }
+  };
+
+  const addTodo = (e) => {
+    e.preventDefault();
+    if (!todoInput.trim()) return;
+    setTodos([{ id: Date.now(), text: todoInput, completed: false }, ...todos]);
+    setTodoInput('');
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(t => t.id !== id));
+  };
+
   return (
     <>
       <div className={`container glass ${isActive ? 'is-running' : ''}`}>
-        <h1>Podomodro</h1>
+        <div className="main-panel">
+          <h1>Podomodro</h1>
 
-        <div className="mode-switcher">
-          {Object.entries(MODES).map(([key, value]) => (
-            <button
-              key={key}
-              className={`mode-btn ${mode === key ? 'active' : ''}`}
-              onClick={() => changeMode(key)}
-              style={mode === key ? { borderBottom: `2px solid ${value.color}` } : {}}
-            >
-              {value.label}
+          <div className="mode-switcher">
+            {Object.entries(MODES).map(([key, value]) => (
+              <button
+                key={key}
+                className={`mode-btn ${mode === key ? 'active' : ''}`}
+                onClick={() => changeMode(key)}
+                style={mode === key ? { borderBottom: `2px solid ${value.color}` } : {}}
+              >
+                {value.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="timer-display" style={{ color: MODES[mode].color }}>
+            {formatTime(timeLeft)}
+          </div>
+
+          <div className="controls">
+            <button className="secondary-btn" onClick={resetTimer}>
+              <RotateCcw size={20} />
             </button>
-          ))}
-        </div>
-
-        <div className="timer-display" style={{ color: MODES[mode].color }}>
-          {formatTime(timeLeft)}
-        </div>
-
-        <div className="controls">
-          <button className="secondary-btn" onClick={resetTimer}>
-            <RotateCcw size={20} />
-          </button>
-          <button className="main-btn" onClick={toggleTimer}>
-            {isActive ? <Pause size={32} /> : <Play size={32} fill="currentColor" />}
-          </button>
-          <button className="secondary-btn" onClick={() => setIsSettingsOpen(true)}>
-            <Settings size={20} />
-          </button>
-        </div>
-
-        <div className="sound-grid">
-          {SOUNDS.map((sound) => (
-            <button
-              key={sound.id}
-              className={`sound-card glass ${activeSounds[sound.id] ? 'active' : ''}`}
-              onClick={() => toggleSound(sound.id, sound.filename)}
-            >
-              {sound.icon}
-              <span>{sound.label}</span>
+            <button className="main-btn" onClick={toggleTimer}>
+              {isActive ? <Pause size={32} /> : <Play size={32} fill="currentColor" />}
             </button>
-          ))}
+            <button className="secondary-btn" onClick={() => setIsSettingsOpen(true)}>
+              <Settings size={20} />
+            </button>
+          </div>
+
+          <div className="sound-grid">
+            {SOUNDS.map((sound) => (
+              <div
+                key={sound.id}
+                className={`sound-card glass ${activeSounds[sound.id] ? 'active' : ''}`}
+              >
+                <button onClick={() => toggleSound(sound.id, sound.filename)}>
+                  {sound.icon}
+                  <span>{sound.label}</span>
+                </button>
+                <div className="volume-slider-container">
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={soundVolumes[sound.id]}
+                    onChange={(e) => updateVolume(sound.id, parseFloat(e.target.value))}
+                    className="volume-slider"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <p style={{ marginTop: '2rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          Mix your favorite sounds to stay focused.
+        <div className="todo-section glass">
+          <div className="todo-header">
+            <h3>Focus Tasks</h3>
+          </div>
+
+          <form onSubmit={addTodo} className="todo-input-group">
+            <input
+              type="text"
+              className="todo-input"
+              placeholder="What are you working on?"
+              value={todoInput}
+              onChange={(e) => setTodoInput(e.target.value)}
+            />
+            <button type="submit" className="add-todo-btn">
+              <Plus size={20} />
+            </button>
+          </form>
+
+          <div className="todo-list">
+            <AnimatePresence initial={false}>
+              {todos.map(todo => (
+                <motion.div
+                  key={todo.id}
+                  className={`todo-item ${todo.completed ? 'completed' : ''}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                >
+                  <div className="todo-content" onClick={() => toggleTodo(todo.id)}>
+                    <div className={`todo-checkbox ${todo.completed ? 'checked' : ''}`}>
+                      {todo.completed && <Check size={14} color="white" />}
+                    </div>
+                    <span>{todo.text}</span>
+                  </div>
+                  <button className="delete-todo" onClick={() => deleteTodo(todo.id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {todos.length === 0 && (
+              <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '20px', fontSize: '0.9rem' }}>
+                No tasks yet. Add one to stay focused!
+              </p>
+            )}
+          </div>
+        </div>
+
+        <p style={{ gridColumn: '1 / -1', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          Mix your favorite sounds and manage your tasks to stay productive.
         </p>
       </div>
 
@@ -199,13 +298,6 @@ function App() {
                     </button>
                   ))}
                 </div>
-              </div>
-
-              <div>
-                <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>About Podomodro</p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                  A premium pomodoro timer with integrated ambient sounds from the Blanket project.
-                </p>
               </div>
 
               <button className="close-btn" onClick={() => setIsSettingsOpen(false)}>
