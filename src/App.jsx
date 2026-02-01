@@ -7,7 +7,9 @@ import {
   Zap, BarChart3, ListTodo, Clock, FolderPlus, ChevronRight,
   Home, Folder, Target, Flame, Trophy, Award, Star,
   TrendingUp, Calendar, Bell, BellOff, Volume2, ChevronDown,
-  ChevronUp, GripVertical, AlertCircle, Circle
+  ChevronUp, GripVertical, AlertCircle, Circle,
+  Moon, Ship, Waves, Maximize2, Minimize2, Download, Upload,
+  StickyNote, Droplets, Eye, Activity
 } from 'lucide-react';
 import { Howl } from 'howler';
 import { motion, AnimatePresence, LayoutGroup, Reorder } from 'framer-motion';
@@ -23,14 +25,32 @@ const SOUNDS = [
   { id: 'rain', label: 'Rain', filename: 'rain.ogg', icon: <CloudRain size={20} /> },
   { id: 'storm', label: 'Storm', filename: 'storm.ogg', icon: <Wind size={20} /> },
   { id: 'wind', label: 'Wind', filename: 'wind.ogg', icon: <Wind size={20} /> },
-  { id: 'waves', label: 'Waves', filename: 'waves.ogg', icon: <ImageIcon size={20} /> },
-  { id: 'stream', label: 'Stream', filename: 'stream.ogg', icon: <ImageIcon size={20} /> },
+  { id: 'waves', label: 'Waves', filename: 'waves.ogg', icon: <Waves size={20} /> },
+  { id: 'stream', label: 'Stream', filename: 'stream.ogg', icon: <Droplets size={20} /> },
   { id: 'birds', label: 'Birds', filename: 'birds.ogg', icon: <TreePine size={20} /> },
+  { id: 'summer-night', label: 'Summer Night', filename: 'summer-night.ogg', icon: <Moon size={20} /> },
   { id: 'fireplace', label: 'Fire', filename: 'fireplace.ogg', icon: <Sun size={20} /> },
   { id: 'coffee-shop', label: 'Cafe', filename: 'coffee-shop.ogg', icon: <Coffee size={20} /> },
   { id: 'city', label: 'City', filename: 'city.ogg', icon: <ImageIcon size={20} /> },
   { id: 'train', label: 'Train', filename: 'train.ogg', icon: <ImageIcon size={20} /> },
-  { id: 'library', label: 'Library', filename: 'white-noise.ogg', icon: <Library size={20} /> },
+  { id: 'boat', label: 'Boat', filename: 'boat.ogg', icon: <Ship size={20} /> },
+  { id: 'white-noise', label: 'White Noise', filename: 'white-noise.ogg', icon: <Library size={20} /> },
+  { id: 'pink-noise', label: 'Pink Noise', filename: 'pink-noise.ogg', icon: <Activity size={20} /> },
+];
+
+const BREAK_ACTIVITIES = [
+  { icon: '🚶', text: '5 min walk', duration: 5 },
+  { icon: '💧', text: 'Drink water', duration: 2 },
+  { icon: '👁️', text: 'Eye exercises', duration: 3 },
+  { icon: '🧘', text: 'Breathing exercise', duration: 5 },
+  { icon: '🤸', text: 'Stretching', duration: 5 },
+];
+
+const DEFAULT_SOUND_PRESETS = [
+  { id: 1, name: 'Rainy Cafe', sounds: ['rain', 'coffee-shop'] },
+  { id: 2, name: 'Deep Focus', sounds: ['white-noise'] },
+  { id: 3, name: 'Nature', sounds: ['birds', 'stream'] },
+  { id: 4, name: 'Night Storm', sounds: ['storm', 'rain'] },
 ];
 
 const ALARM_SOUNDS = [
@@ -360,7 +380,7 @@ function TimerPage() {
   const {
     projects, todos, durations, setDurations,
     dailyStats, setDailyStats,
-    goals, achievements, setAchievements, updateStreak, checkBadges,
+    goals, setGoals, achievements, setAchievements, updateStreak, checkBadges,
     settings, setSettings,
     currentTheme, setCurrentTheme,
     currentProject, setCurrentProject
@@ -374,9 +394,27 @@ function TimerPage() {
   const [isProjectPanelOpen, setIsProjectPanelOpen] = useState(false);
   const [pomodoroCount, setPomodoroCount] = useState(0);
   const [notificationPermission, setNotificationPermission] = useState('default');
+  
+  // New Feature States
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [soundPresets, setSoundPresets] = useState(() => {
+    const saved = localStorage.getItem('podomodro-sound-presets');
+    return saved ? JSON.parse(saved) : DEFAULT_SOUND_PRESETS;
+  });
+  const [quickNote, setQuickNote] = useState('');
+  const [quickNotes, setQuickNotes] = useState(() => {
+    const saved = localStorage.getItem('podomodro-quick-notes');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showNoteInput, setShowNoteInput] = useState(false);
+  const [autoTheme, setAutoTheme] = useState(() => {
+    const saved = localStorage.getItem('podomodro-auto-theme');
+    return saved ? JSON.parse(saved) : false;
+  });
 
   const soundInstances = useRef({});
-  const alarmRef = useRef(null);
+  const alarmRef = useRef({});
 
   // Request notification permission
   useEffect(() => {
@@ -392,9 +430,198 @@ function TimerPage() {
     }
   };
 
+  // Keyboard Shortcuts
   useEffect(() => {
-    document.body.className = `theme-${currentTheme} ${isActive ? 'is-running' : ''}`;
-  }, [currentTheme, isActive]);
+    const handleKeyPress = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault();
+          toggleTimer();
+          break;
+        case 'KeyR':
+          if (!e.ctrlKey && !e.metaKey) {
+            setTimeLeft(durations[mode] * 60);
+            setIsActive(false);
+          }
+          break;
+        case 'KeyS':
+          setIsSettingsOpen(true);
+          break;
+        case 'KeyM':
+          toggleMuteAll();
+          break;
+        case 'KeyF':
+          setIsFocusMode(prev => !prev);
+          break;
+        case 'Escape':
+          setIsSettingsOpen(false);
+          setIsProjectPanelOpen(false);
+          setShowNoteInput(false);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isActive, mode, durations]);
+
+  // Toggle Mute All Sounds
+  const toggleMuteAll = () => {
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    Object.keys(soundInstances.current).forEach(key => {
+      if (soundInstances.current[key]) {
+        soundInstances.current[key].mute(newMuted);
+      }
+    });
+  };
+
+  // Save Quick Notes to localStorage
+  useEffect(() => {
+    localStorage.setItem('podomodro-quick-notes', JSON.stringify(quickNotes));
+  }, [quickNotes]);
+
+  // Save Sound Presets to localStorage
+  useEffect(() => {
+    localStorage.setItem('podomodro-sound-presets', JSON.stringify(soundPresets));
+  }, [soundPresets]);
+
+  // Save Auto Theme setting
+  useEffect(() => {
+    localStorage.setItem('podomodro-auto-theme', JSON.stringify(autoTheme));
+  }, [autoTheme]);
+
+  // Auto Theme Timer
+  useEffect(() => {
+    if (!autoTheme) return;
+    
+    const checkTimeTheme = () => {
+      const hour = new Date().getHours();
+      if (hour >= 6 && hour < 18) {
+        setCurrentTheme('nature');
+      } else if (hour >= 18 && hour < 21) {
+        setCurrentTheme('sunset');
+      } else {
+        setCurrentTheme('space');
+      }
+    };
+    
+    checkTimeTheme();
+    const interval = setInterval(checkTimeTheme, 60000);
+    return () => clearInterval(interval);
+  }, [autoTheme]);
+
+  // Apply Sound Preset
+  const applyPreset = (presetSounds) => {
+    Object.keys(soundInstances.current).forEach(key => {
+      if (soundInstances.current[key]) {
+        soundInstances.current[key].stop();
+      }
+    });
+    setActiveSounds({});
+    
+    presetSounds.forEach(soundId => {
+      const sound = SOUNDS.find(s => s.id === soundId);
+      if (sound) {
+        const url = SOUND_BASE_URL + sound.filename;
+        if (!soundInstances.current[soundId]) {
+          soundInstances.current[soundId] = new Howl({ 
+            src: [url], 
+            loop: true, 
+            volume: 0.5, 
+            format: ['ogg'] 
+          });
+        }
+        soundInstances.current[soundId].play();
+        setActiveSounds(prev => ({ 
+          ...prev, 
+          [soundId]: { playing: true, volume: 0.5 } 
+        }));
+      }
+    });
+  };
+
+  // Save Current Sounds as Preset
+  const saveCurrentAsPreset = () => {
+    const activeSoundIds = Object.keys(activeSounds).filter(id => activeSounds[id]?.playing || activeSounds[id] === true);
+    if (activeSoundIds.length === 0) return;
+    
+    const name = prompt('Enter preset name:');
+    if (name) {
+      setSoundPresets(prev => [...prev, { 
+        id: Date.now(), 
+        name, 
+        sounds: activeSoundIds 
+      }]);
+    }
+  };
+
+  // Add Quick Note
+  const saveQuickNote = () => {
+    if (quickNote.trim()) {
+      setQuickNotes(prev => [...prev, {
+        id: Date.now(),
+        text: quickNote.trim(),
+        timestamp: new Date().toISOString(),
+        pomodoro: achievements.totalPomodoros + 1
+      }]);
+      setQuickNote('');
+      setShowNoteInput(false);
+    }
+  };
+
+  // Export Data
+  const exportData = () => {
+    const data = {
+      dailyStats,
+      achievements,
+      projects,
+      todos,
+      settings,
+      durations,
+      goals,
+      quickNotes,
+      soundPresets,
+      exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `podomodro-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Import Data
+  const importData = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (window.confirm('This will overwrite your current data. Continue?')) {
+          if (data.dailyStats) setDailyStats(data.dailyStats);
+          if (data.achievements) setAchievements(data.achievements);
+          if (data.durations) setDurations(data.durations);
+          if (data.goals) setGoals(data.goals);
+          if (data.settings) setSettings(data.settings);
+          if (data.quickNotes) setQuickNotes(data.quickNotes);
+          if (data.soundPresets) setSoundPresets(data.soundPresets);
+          alert('Data imported successfully!');
+        }
+      } catch (err) {
+        alert('Invalid file format!');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  useEffect(() => {
+    document.body.className = `theme-${currentTheme} ${isActive ? 'is-running' : ''} ${isFocusMode ? 'focus-mode' : ''}`;
+  }, [currentTheme, isActive, isFocusMode]);
 
   useEffect(() => {
     if (!isActive) {
@@ -519,7 +746,23 @@ function TimerPage() {
   };
 
   return (
-    <div className="page-wrapper">
+    <div className={`page-wrapper ${isFocusMode ? 'focus-mode-active' : ''}`}>
+      {currentTheme === 'rain' && (
+        <div className="rain-container">
+          {[...Array(80)].map((_, i) => (
+            <div
+              key={i}
+              className="rain-drop"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDuration: `${0.5 + Math.random() * 0.5}s`,
+                animationDelay: `${Math.random() * 2}s`,
+                opacity: 0.1 + Math.random() * 0.4
+              }}
+            />
+          ))}
+        </div>
+      )}
       <LayoutGroup>
         <motion.div
           className="premium-card"
@@ -598,7 +841,10 @@ function TimerPage() {
           </div>
 
           <div className="timer-controls">
-            <motion.button className="icon-btn" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => { setTimeLeft(durations[mode] * 60); setIsActive(false); }}>
+            <motion.button className="icon-btn" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleMuteAll} title="Mute All (M)">
+              {isMuted ? <BellOff size={18} /> : <Bell size={18} />}
+            </motion.button>
+            <motion.button className="icon-btn" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => { setTimeLeft(durations[mode] * 60); setIsActive(false); }} title="Reset (R)">
               <RotateCcw size={18} />
             </motion.button>
             <motion.button
@@ -606,30 +852,53 @@ function TimerPage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTimer}
+              title="Start/Pause (Space)"
             >
               {isActive ? <Pause size={32} /> : <Play size={32} style={{ marginLeft: 4 }} />}
             </motion.button>
-            <motion.button className="icon-btn" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setIsSettingsOpen(true)}>
+            <motion.button className="icon-btn" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setIsFocusMode(!isFocusMode)} title="Focus Mode (F)">
+              {isFocusMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </motion.button>
+            <motion.button className="icon-btn" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setIsSettingsOpen(true)} title="Settings (S)">
               <Settings size={18} />
             </motion.button>
+          </div>
+
+          {/* Sound Presets */}
+          <div className="sound-presets">
+            <span className="presets-label">Presets:</span>
+            {soundPresets.map(preset => (
+              <button 
+                key={preset.id}
+                className="preset-btn"
+                onClick={() => applyPreset(preset.sounds)}
+              >
+                {preset.name}
+              </button>
+            ))}
+            <button className="preset-btn save-preset" onClick={saveCurrentAsPreset} title="Save current as preset">
+              <Plus size={14} />
+            </button>
           </div>
 
           <div className="sound-list">
             {SOUNDS.map(sound => (
               <motion.div
                 key={sound.id}
-                className={`sound-item ${activeSounds[sound.id] ? 'active' : ''}`}
+                className={`sound-item ${activeSounds[sound.id]?.playing || activeSounds[sound.id] === true ? 'active' : ''}`}
                 onClick={() => {
                   const url = SOUND_BASE_URL + sound.filename;
-                  if (activeSounds[sound.id]) {
+                  const isPlaying = activeSounds[sound.id]?.playing || activeSounds[sound.id] === true;
+                  if (isPlaying) {
                     soundInstances.current[sound.id].stop();
-                    setActiveSounds(prev => ({ ...prev, [sound.id]: false }));
+                    setActiveSounds(prev => ({ ...prev, [sound.id]: { playing: false, volume: 0.5 } }));
                   } else {
                     if (!soundInstances.current[sound.id]) {
                       soundInstances.current[sound.id] = new Howl({ src: [url], loop: true, volume: 0.5, format: ['ogg'] });
                     }
                     soundInstances.current[sound.id].play();
-                    setActiveSounds(prev => ({ ...prev, [sound.id]: true }));
+                    if (isMuted) soundInstances.current[sound.id].mute(true);
+                    setActiveSounds(prev => ({ ...prev, [sound.id]: { playing: true, volume: 0.5 } }));
                   }
                 }}
                 whileHover={{ scale: 1.05 }}
@@ -637,12 +906,79 @@ function TimerPage() {
               >
                 {sound.icon}
                 <span>{sound.label}</span>
+                {(activeSounds[sound.id]?.playing || activeSounds[sound.id] === true) && (
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={activeSounds[sound.id]?.volume || 0.5}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      const vol = parseFloat(e.target.value);
+                      soundInstances.current[sound.id]?.volume(vol);
+                      setActiveSounds(prev => ({
+                        ...prev,
+                        [sound.id]: { ...prev[sound.id], volume: vol }
+                      }));
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="sound-volume-slider"
+                  />
+                )}
               </motion.div>
             ))}
           </div>
+
+          {/* Quick Note Button */}
+          <motion.button 
+            className="quick-note-btn"
+            onClick={() => setShowNoteInput(!showNoteInput)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <StickyNote size={16} />
+            Quick Note
+          </motion.button>
+
+          {showNoteInput && (
+            <motion.div 
+              className="quick-note-input"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <input
+                type="text"
+                placeholder="Type a quick note..."
+                value={quickNote}
+                onChange={(e) => setQuickNote(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveQuickNote()}
+                autoFocus
+              />
+              <button onClick={saveQuickNote}><Check size={16} /></button>
+            </motion.div>
+          )}
         </motion.div>
 
         <div className="secondary-section">
+          {mode !== 'FOCUS' && isActive && (
+            <motion.div 
+              className="mini-card break-widget"
+              variants={containerVariants} 
+              initial="hidden" 
+              animate="visible"
+            >
+              <h3 className="section-title"><Activity size={18} /> Break Suggestions</h3>
+              {BREAK_ACTIVITIES.slice(0, 3).map((activity, i) => (
+                <div key={i} className="break-item">
+                  <span className="break-icon">{activity.icon}</span>
+                  <span>{activity.text}</span>
+                  <span className="break-duration">{activity.duration}m</span>
+                </div>
+              ))}
+            </motion.div>
+          )}
+
           {recentTasks.length > 0 && (
             <motion.div className="mini-card" variants={containerVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
               <h3 className="section-title"><ListTodo size={18} /> Current Tasks</h3>
@@ -865,13 +1201,52 @@ function TimerPage() {
                     <motion.div
                       key={t.id}
                       className={`theme-opt ${currentTheme === t.id ? 'active' : ''}`}
-                      onClick={() => setCurrentTheme(t.id)}
+                      onClick={() => { setCurrentTheme(t.id); setAutoTheme(false); }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       {t.label}
                     </motion.div>
                   ))}
+                </div>
+                <div className="toggle-option" style={{ marginTop: 16 }}>
+                  <span>Auto theme (by time of day)</span>
+                  <button 
+                    className={`toggle-btn ${autoTheme ? 'active' : ''}`}
+                    onClick={() => setAutoTheme(!autoTheme)}
+                  >
+                    <div className="toggle-knob" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="settings-section">
+                <label className="settings-label">Data Management</label>
+                <div className="data-management-btns">
+                  <button className="submit-btn secondary" onClick={exportData}>
+                    <Download size={18} /> Export Data
+                  </button>
+                  <label className="submit-btn secondary" style={{ cursor: 'pointer' }}>
+                    <Upload size={18} /> Import Data
+                    <input 
+                      type="file" 
+                      accept=".json" 
+                      style={{ display: 'none' }}
+                      onChange={(e) => e.target.files[0] && importData(e.target.files[0])}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="settings-section keyboard-shortcuts-section">
+                <label className="settings-label">Keyboard Shortcuts</label>
+                <div className="shortcuts-list">
+                  <div className="shortcut-item"><kbd>Space</kbd> Start/Pause</div>
+                  <div className="shortcut-item"><kbd>R</kbd> Reset</div>
+                  <div className="shortcut-item"><kbd>S</kbd> Settings</div>
+                  <div className="shortcut-item"><kbd>M</kbd> Mute/Unmute</div>
+                  <div className="shortcut-item"><kbd>F</kbd> Focus Mode</div>
+                  <div className="shortcut-item"><kbd>Esc</kbd> Close</div>
                 </div>
               </div>
             </motion.div>

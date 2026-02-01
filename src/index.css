@@ -2201,3 +2201,340 @@ input[type="number"]::-webkit-inner-spin-button {
     margin: 0 auto;
   }
 }
+
+/* ========================================
+   NEW QUICK WINS FEATURES STYLES
+   ======================================== */
+
+/* Rain Effect */
+.rain-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.rain-drop {
+  position: absolute;
+  width: 2px;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3));
+  animation: rain-fall linear infinite;
+}
+
+@keyframes rain-fall {
+  0% {
+    transform: translateY(-100px);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* Focus Mode */
+body.focus-mode .navbar,
+body.focus-mode .secondary-section,
+body.focus-mode .sound-presets,
+body.focus-mode .quick-note-btn,
+body.focus-mode .quick-note-input,
+body.focus-mode .daily-goal-section,
+body.focus-mode .project-selector {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+body.focus-mode .sound-list {
+  max-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+}
+
+body.focus-mode .premium-card {
+  transform: scale(1.05);
+  transition: transform 0.5s ease;
+}
+
+body.focus-mode .timer-display {
+  font-size: 12rem;
+  transition: font-size 0.5s ease;
+}
+
+.focus-mode-active .premium-card {
+  padding: 80px 50px;
+}
+
+/* Sound Volume Slider */
+.sound-volume-slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.sound-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--bg-deep);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.sound-volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--bg-deep);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.sound-item.active .sound-volume-slider {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sound-item.active .sound-volume-slider::-webkit-slider-thumb {
+  background: var(--text-main);
+}
+
+/* Sound Presets */
+.sound-presets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.presets-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.preset-btn {
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preset-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+}
+
+.preset-btn.save-preset {
+  background: rgba(255, 59, 59, 0.1);
+  border-color: rgba(255, 59, 59, 0.3);
+  color: var(--accent-red);
+}
+
+.preset-btn.save-preset:hover {
+  background: rgba(255, 59, 59, 0.2);
+}
+
+/* Quick Note */
+.quick-note-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.quick-note-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.quick-note-input {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.quick-note-input input {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  color: white;
+  font-size: 0.9rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.quick-note-input input:focus {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.quick-note-input button {
+  padding: 12px 16px;
+  background: var(--accent-red);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-note-input button:hover {
+  opacity: 0.9;
+}
+
+/* Break Widget */
+.break-widget {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1)) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.break-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.break-item:last-child {
+  margin-bottom: 0;
+}
+
+.break-icon {
+  font-size: 1.2rem;
+}
+
+.break-duration {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+/* Data Management Buttons */
+.data-management-btns {
+  display: flex;
+  gap: 12px;
+}
+
+.data-management-btns .submit-btn {
+  flex: 1;
+}
+
+.submit-btn.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+}
+
+.submit-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Keyboard Shortcuts Section */
+.keyboard-shortcuts-section {
+  border-bottom: none !important;
+}
+
+.shortcuts-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.shortcut-item kbd {
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  font-family: var(--font-main);
+  font-size: 0.75rem;
+  color: var(--text-main);
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Mobile Responsiveness for New Features */
+@media (max-width: 768px) {
+  body.focus-mode .timer-display {
+    font-size: 8rem;
+  }
+
+  .sound-presets {
+    justify-content: center;
+  }
+
+  .data-management-btns {
+    flex-direction: column;
+  }
+
+  .shortcuts-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  body.focus-mode .timer-display {
+    font-size: 6rem;
+  }
+
+  .preset-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  .quick-note-input {
+    flex-direction: column;
+  }
+
+  .quick-note-input button {
+    width: 100%;
+  }
+
+  .break-item {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+}
