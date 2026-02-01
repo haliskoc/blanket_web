@@ -211,8 +211,8 @@ function App() {
         ))}
       </div>
 
-      <section className="timer-section">
-        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 0.5 }}>Podomodro</motion.h1>
+      <section className="timer-section glass-section">
+        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} style={{ color: '#fff' }}>Podomodro</motion.h1>
 
         <div className="mode-switcher">
           {Object.keys(durations).map((key) => (
@@ -249,8 +249,8 @@ function App() {
       </section>
 
       <section className="secondary-grid">
-        <div className="mixer-column">
-          <h3 className="grid-title">Atmosfera</h3>
+        <div className="mixer-column glass-section">
+          <h3 className="grid-title" style={{ color: '#fff', opacity: 0.8 }}>Atmosfera</h3>
           <div className="sound-list">
             {SOUNDS.map(sound => (
               <div key={sound.id} className={`sound-item ${activeSounds[sound.id] ? 'active' : ''}`}>
@@ -272,8 +272,8 @@ function App() {
           </div>
         </div>
 
-        <div className="todo-column">
-          <h3 className="grid-title">Tasks</h3>
+        <div className="todo-column glass-section">
+          <h3 className="grid-title" style={{ color: '#fff', opacity: 0.8 }}>Tasks</h3>
           <div className="todo-container">
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -310,8 +310,8 @@ function App() {
         </div>
       </section>
 
-      <section className="stats-panel">
-        <h3 className="grid-title">Insights</h3>
+      <section className="stats-panel glass-section">
+        <h3 className="grid-title" style={{ color: '#fff', opacity: 0.8 }}>Insights</h3>
         <div className="analytics-grid">
           <div className="stat-card">
             <span className="settings-label">Last 7 Days (Sessions)</span>
