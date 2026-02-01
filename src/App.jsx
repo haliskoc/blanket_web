@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Play, Pause, RotateCcw, Settings, X,
-  Plus, Check, Trash2, ArrowRight
+  Plus, Check, Trash2
 } from 'lucide-react';
 import { Howl } from 'howler';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
-
-const MODES = {
-  FOCUS: { label: 'Focus', minutes: 25 },
-  SHORT: { label: 'Short Break', minutes: 5 },
-  LONG: { label: 'Long Break', minutes: 15 },
-};
 
 const SOUND_BASE_URL = 'https://raw.githubusercontent.com/rafaelmardojai/blanket/master/data/resources/sounds/';
 
@@ -40,12 +34,21 @@ const THEMES = [
   { id: 'city', label: 'Night City' },
   { id: 'space', label: 'Starry Sky' },
   { id: 'cozy', label: 'Cozy Room' },
+  { id: 'rain', label: 'Rainy Day' },
+  { id: 'coffee', label: 'Coffee Shop' },
+  { id: 'library', label: 'Library' },
+  { id: 'desert', label: 'Desert' },
+  { id: 'sunset', label: 'Sunset' },
   { id: 'cyberpunk', label: 'Neon' },
 ];
 
 function App() {
   const [mode, setMode] = useState('FOCUS');
-  const [timeLeft, setTimeLeft] = useState(MODES.FOCUS.minutes * 60);
+  const [durations, setDurations] = useState(() => {
+    const saved = localStorage.getItem('podomodro-durations');
+    return saved ? JSON.parse(saved) : { FOCUS: 25, SHORT: 5, LONG: 15 };
+  });
+  const [timeLeft, setTimeLeft] = useState(durations.FOCUS * 60);
   const [isActive, setIsActive] = useState(false);
   const [activeSounds, setActiveSounds] = useState({});
   const [soundVolumes, setSoundVolumes] = useState(
@@ -61,21 +64,31 @@ function App() {
 
   const soundInstances = useRef({});
 
+  // Sync settings and todos
   useEffect(() => {
+    localStorage.setItem('podomodro-durations', JSON.stringify(durations));
     localStorage.setItem('podomodro-todos', JSON.stringify(todos));
-  }, [todos]);
+  }, [durations, todos]);
 
   useEffect(() => {
     document.body.className = `theme-${currentTheme}`;
   }, [currentTheme]);
 
+  // Update timeLeft when durations or mode change
+  useEffect(() => {
+    if (!isActive) {
+      setTimeLeft(durations[mode] * 60);
+    }
+  }, [durations, mode, isActive]);
+
+  // Timer logic
   useEffect(() => {
     let interval = null;
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && isActive) {
       clearInterval(interval);
       setIsActive(false);
       new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'] }).play();
@@ -87,13 +100,18 @@ function App() {
 
   const resetTimer = useCallback(() => {
     setIsActive(false);
-    setTimeLeft(MODES[mode].minutes * 60);
-  }, [mode]);
+    setTimeLeft(durations[mode] * 60);
+  }, [mode, durations]);
 
   const changeMode = (newMode) => {
     setMode(newMode);
     setIsActive(false);
-    setTimeLeft(MODES[newMode].minutes * 60);
+    setTimeLeft(durations[newMode] * 60);
+  };
+
+  const updateDuration = (m, value) => {
+    const newVal = parseInt(value) || 0;
+    setDurations(prev => ({ ...prev, [m]: newVal }));
   };
 
   const formatTime = (seconds) => {
@@ -146,13 +164,13 @@ function App() {
         </motion.h1>
 
         <div className="mode-switcher">
-          {Object.entries(MODES).map(([key, value]) => (
+          {Object.keys(durations).map((key) => (
             <button
               key={key}
               className={`mode-btn ${mode === key ? 'active' : ''}`}
               onClick={() => changeMode(key)}
             >
-              {value.label}
+              {key === 'FOCUS' ? 'Focus' : key === 'SHORT' ? 'Short Break' : 'Long Break'}
             </button>
           ))}
         </div>
@@ -180,7 +198,7 @@ function App() {
 
       <section className="secondary-grid">
         <div className="mixer-column">
-          <h3 className="grid-title">Atmosfera</h3>
+          <h3 className="grid-title">Mixer</h3>
           <div className="sound-list">
             {SOUNDS.map(sound => (
               <div key={sound.id} className={`sound-item ${activeSounds[sound.id] ? 'active' : ''}`}>
@@ -203,12 +221,12 @@ function App() {
         </div>
 
         <div className="todo-column">
-          <h3 className="grid-title">Focus Tasks</h3>
+          <h3 className="grid-title">Tasks</h3>
           <div className="todo-container">
             <form onSubmit={addTodo} className="todo-add-group">
               <input
                 className="todo-input"
-                placeholder="Next goal..."
+                placeholder="Add a task..."
                 value={todoInput}
                 onChange={(e) => setTodoInput(e.target.value)}
               />
@@ -260,22 +278,47 @@ function App() {
               exit={{ scale: 0.9, y: 20 }}
               onClick={e => e.stopPropagation()}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 32 }}>
                 <h2 style={{ fontSize: '1.2rem', fontWeight: 500 }}>Settings</h2>
                 <button className="icon-btn" onClick={() => setIsSettingsOpen(false)}><X size={24} /></button>
               </div>
-              <p className="grid-title">Current Theme</p>
-              <div className="theme-grid">
-                {THEMES.map(theme => (
-                  <div
-                    key={theme.id}
-                    className={`theme-opt ${currentTheme === theme.id ? 'active' : ''}`}
-                    onClick={() => setCurrentTheme(theme.id)}
-                  >
-                    {theme.label}
+
+              <div className="settings-group">
+                <span className="settings-label">Timer Durations (min)</span>
+                <div className="duration-inputs">
+                  <div className="duration-field">
+                    <label>Focus</label>
+                    <input type="number" value={durations.FOCUS} onChange={(e) => updateDuration('FOCUS', e.target.value)} />
                   </div>
-                ))}
+                  <div className="duration-field">
+                    <label>Short</label>
+                    <input type="number" value={durations.SHORT} onChange={(e) => updateDuration('SHORT', e.target.value)} />
+                  </div>
+                  <div className="duration-field">
+                    <label>Long</label>
+                    <input type="number" value={durations.LONG} onChange={(e) => updateDuration('LONG', e.target.value)} />
+                  </div>
+                </div>
               </div>
+
+              <div className="settings-group" style={{ marginBottom: 0 }}>
+                <span className="settings-label">Background Experience</span>
+                <div className="theme-grid">
+                  {THEMES.map(theme => (
+                    <div
+                      key={theme.id}
+                      className={`theme-opt ${currentTheme === theme.id ? 'active' : ''}`}
+                      onClick={() => setCurrentTheme(theme.id)}
+                    >
+                      {theme.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button className="close-btn" style={{ marginTop: 40, width: '100%', padding: 16, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--text-primary)', color: 'var(--bg-primary)', fontWeight: 600, cursor: 'pointer' }} onClick={() => setIsSettingsOpen(false)}>
+                Save & Close
+              </button>
             </motion.div>
           </motion.div>
         )}

@@ -80,6 +80,36 @@ body.theme-cozy {
   background-position: center;
 }
 
+body.theme-rain {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1511289080722-4a241288d6f1?q=80&w=2560&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+body.theme-coffee {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2560&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+body.theme-library {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2560&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+body.theme-desert {
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?q=80&w=2560&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+body.theme-sunset {
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2560&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
 body.theme-cyberpunk {
   --accent: #00ffcc;
   background: #050505;
@@ -259,6 +289,7 @@ h1 {
   width: 100%;
   height: 2px;
   -webkit-appearance: none;
+  appearance: none;
   background: var(--border);
   outline: none;
 }
@@ -355,6 +386,52 @@ h1 {
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-top: 24px;
+}
+
+.settings-group {
+  margin-bottom: 32px;
+}
+
+.settings-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+}
+
+.duration-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.duration-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.duration-field label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.duration-field input {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  width: 100%;
+  outline: none;
+}
+
+.duration-field input:focus {
+  border-color: var(--text-primary);
 }
 
 .theme-opt {
