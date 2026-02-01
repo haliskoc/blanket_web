@@ -37,7 +37,9 @@ const THEMES = [
   { id: 'nature', label: 'Forest' },
   { id: 'mountain', label: 'Mountain' },
   { id: 'sea', label: 'Ocean' },
-  { id: 'city', label: 'City' },
+  { id: 'city', label: 'Night City' },
+  { id: 'space', label: 'Starry Sky' },
+  { id: 'cozy', label: 'Cozy Room' },
   { id: 'cyberpunk', label: 'Neon' },
 ];
 
