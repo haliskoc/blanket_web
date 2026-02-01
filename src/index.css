@@ -111,8 +111,8 @@ body.theme-geometry {
 }
 
 .container {
-  width: 90%;
-  max-width: 500px;
+  width: 95%;
+  max-width: 600px;
   padding: 40px;
   text-align: center;
   position: relative;
@@ -213,9 +213,22 @@ button {
 
 .sound-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   margin-top: 2rem;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Custom Scrollbar for sound grid */
+.sound-grid::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sound-grid::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 10px;
 }
 
 .sound-card {

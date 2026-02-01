@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Pause, RotateCcw, Volume2, VolumeX, CloudRain, TreePine, Coffee, Wind, Settings, X } from 'lucide-react';
+import {
+  Play, Pause, RotateCcw, Settings, X,
+  CloudRain, TreePine, Coffee, Wind,
+  Bird, Ship, Building, Flame, Zap,
+  Droplets, Moon, Train, Waves, Volume2
+} from 'lucide-react';
 import { Howl } from 'howler';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
@@ -10,11 +15,23 @@ const MODES = {
   LONG: { label: 'Long Break', minutes: 15, color: 'var(--accent-long)' },
 };
 
+const SOUND_BASE_URL = 'https://raw.githubusercontent.com/rafaelmardojai/blanket/main/data/resources/sounds/';
+
 const SOUNDS = [
-  { id: 'rain', label: 'Rain', icon: <CloudRain />, url: 'https://assets.mixkit.co/active_storage/sfx/2418/2418-preview.mp3' },
-  { id: 'forest', label: 'Forest', icon: <TreePine />, url: 'https://assets.mixkit.co/active_storage/sfx/2434/2434-preview.mp3' },
-  { id: 'coffee', label: 'Cafe', icon: <Coffee />, url: 'https://assets.mixkit.co/active_storage/sfx/2443/2443-preview.mp3' },
-  { id: 'wind', label: 'Wind', icon: <Wind />, url: 'https://assets.mixkit.co/active_storage/sfx/2445/2445-preview.mp3' },
+  { id: 'rain', label: 'Rain', icon: <CloudRain />, filename: 'rain.ogg' },
+  { id: 'storm', label: 'Storm', icon: <Zap />, filename: 'storm.ogg' },
+  { id: 'wind', label: 'Wind', icon: <Wind />, filename: 'wind.ogg' },
+  { id: 'waves', label: 'Waves', icon: <Waves />, filename: 'waves.ogg' },
+  { id: 'stream', label: 'Stream', icon: <Droplets />, filename: 'stream.ogg' },
+  { id: 'birds', label: 'Birds', icon: <Bird />, filename: 'birds.ogg' },
+  { id: 'summer-night', label: 'Night', icon: <Moon />, filename: 'summer-night.ogg' },
+  { id: 'fireplace', label: 'Fire', icon: <Flame />, filename: 'fireplace.ogg' },
+  { id: 'coffee-shop', label: 'Cafe', icon: <Coffee />, filename: 'coffee-shop.ogg' },
+  { id: 'city', label: 'City', icon: <Building />, filename: 'city.ogg' },
+  { id: 'train', label: 'Train', icon: <Train />, filename: 'train.ogg' },
+  { id: 'boat', label: 'Boat', icon: <Ship />, filename: 'boat.ogg' },
+  { id: 'white-noise', label: 'White', icon: <Volume2 />, filename: 'white-noise.ogg' },
+  { id: 'pink-noise', label: 'Pink', icon: <Volume2 />, filename: 'pink-noise.ogg' },
 ];
 
 const THEMES = [
@@ -75,7 +92,8 @@ function App() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const toggleSound = (soundId, url) => {
+  const toggleSound = (soundId, filename) => {
+    const url = SOUND_BASE_URL + filename;
     if (activeSounds[soundId]) {
       soundInstances.current[soundId].stop();
       setActiveSounds(prev => ({ ...prev, [soundId]: false }));
@@ -85,6 +103,7 @@ function App() {
           src: [url],
           loop: true,
           volume: 0.5,
+          format: ['ogg']
         });
       }
       soundInstances.current[soundId].play();
@@ -131,7 +150,7 @@ function App() {
             <button
               key={sound.id}
               className={`sound-card glass ${activeSounds[sound.id] ? 'active' : ''}`}
-              onClick={() => toggleSound(sound.id, sound.url)}
+              onClick={() => toggleSound(sound.id, sound.filename)}
             >
               {sound.icon}
               <span>{sound.label}</span>
@@ -140,7 +159,7 @@ function App() {
         </div>
 
         <p style={{ marginTop: '2rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          Stay focused, stay productive.
+          Mix your favorite sounds to stay focused.
         </p>
       </div>
 
@@ -160,7 +179,13 @@ function App() {
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2>Settings</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ margin: 0 }}>Settings</h2>
+                <button onClick={() => setIsSettingsOpen(false)} style={{ color: 'var(--text-secondary)' }}>
+                  <X size={24} />
+                </button>
+              </div>
+
               <div style={{ marginBottom: '2rem' }}>
                 <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Appearance</p>
                 <div className="theme-options">
@@ -177,8 +202,10 @@ function App() {
               </div>
 
               <div>
-                <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Focus Sound</p>
-                <p style={{ fontSize: '0.8rem' }}>Ambient sounds can be mixed in the main dashboard.</p>
+                <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>About Podomodro</p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                  A premium pomodoro timer with integrated ambient sounds from the Blanket project.
+                </p>
               </div>
 
               <button className="close-btn" onClick={() => setIsSettingsOpen(false)}>
