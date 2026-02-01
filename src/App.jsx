@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Play, Pause, RotateCcw, Settings, X,
-  Plus, Check, Trash2
+  Plus, Check, Trash2, PieChart, BarChart2,
+  Tag, Clock, Calendar
 } from 'lucide-react';
 import { Howl } from 'howler';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, Cell
+} from 'recharts';
+import confetti from 'canvas-confetti';
 import './App.css';
 
 const SOUND_BASE_URL = 'https://raw.githubusercontent.com/rafaelmardojai/blanket/master/data/resources/sounds/';
@@ -42,6 +48,8 @@ const THEMES = [
   { id: 'cyberpunk', label: 'Neon' },
 ];
 
+const PROJECTS = ['Deep Focus', 'Coding', 'Design', 'Reading', 'Writing', 'Study'];
+
 function App() {
   const [mode, setMode] = useState('FOCUS');
   const [durations, setDurations] = useState(() => {
@@ -56,25 +64,42 @@ function App() {
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('default');
+  const [currentProject, setCurrentProject] = useState('Deep Focus');
+
   const [todos, setTodos] = useState(() => {
     const saved = localStorage.getItem('podomodro-todos');
     return saved ? JSON.parse(saved) : [];
   });
   const [todoInput, setTodoInput] = useState('');
 
+  // Stats State
+  const [dailyStats, setDailyStats] = useState(() => {
+    const saved = localStorage.getItem('podomodro-stats');
+    return saved ? JSON.parse(saved) : {};
+  });
+
   const soundInstances = useRef({});
 
-  // Sync settings and todos
+  // Rain Effect Drops
+  const [rainDrops] = useState(() =>
+    Array.from({ length: 50 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 2}s`,
+      duration: `${0.5 + Math.random() * 0.5}s`
+    }))
+  );
+
   useEffect(() => {
     localStorage.setItem('podomodro-durations', JSON.stringify(durations));
     localStorage.setItem('podomodro-todos', JSON.stringify(todos));
-  }, [durations, todos]);
+    localStorage.setItem('podomodro-stats', JSON.stringify(dailyStats));
+  }, [durations, todos, dailyStats]);
 
   useEffect(() => {
     document.body.className = `theme-${currentTheme}`;
   }, [currentTheme]);
 
-  // Update timeLeft when durations or mode change
   useEffect(() => {
     if (!isActive) {
       setTimeLeft(durations[mode] * 60);
@@ -91,10 +116,34 @@ function App() {
     } else if (timeLeft === 0 && isActive) {
       clearInterval(interval);
       setIsActive(false);
-      new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'] }).play();
+      handleSessionComplete();
     }
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
+
+  const handleSessionComplete = () => {
+    // Play sound
+    new Howl({ src: ['https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'] }).play();
+
+    // Confetti!
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#ffffff', '#a1a1a1', '#525252']
+    });
+
+    if (mode === 'FOCUS') {
+      const today = new Date().toISOString().split('T')[0];
+      setDailyStats(prev => {
+        const newStats = { ...prev };
+        if (!newStats[today]) newStats[today] = { count: 0, projects: {} };
+        newStats[today].count += 1;
+        newStats[today].projects[currentProject] = (newStats[today].projects[currentProject] || 0) + 1;
+        return newStats;
+      });
+    }
+  };
 
   const toggleTimer = () => setIsActive(!isActive);
 
@@ -107,17 +156,6 @@ function App() {
     setMode(newMode);
     setIsActive(false);
     setTimeLeft(durations[newMode] * 60);
-  };
-
-  const updateDuration = (m, value) => {
-    const newVal = parseInt(value) || 0;
-    setDurations(prev => ({ ...prev, [m]: newVal }));
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const toggleSound = (soundId, filename) => {
@@ -146,59 +184,73 @@ function App() {
     }
   };
 
-  const addTodo = (e) => {
-    e.preventDefault();
-    if (!todoInput.trim()) return;
-    setTodos([{ id: Date.now(), text: todoInput, completed: false }, ...todos]);
-    setTodoInput('');
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Stats Data Prep
+  const statsData = Object.entries(dailyStats).slice(-7).map(([date, data]) => ({
+    name: date.split('-').slice(1).join('/'),
+    count: data.count,
+  }));
+
+  const currentProjectData = dailyStats[new Date().toISOString().split('T')[0]]?.projects || {};
+  const projectChartData = Object.entries(currentProjectData).map(([name, value]) => ({ name, value }));
 
   return (
     <div className="app-wrapper">
+      <div className="rain-overlay">
+        {rainDrops.map(drop => (
+          <div
+            key={drop.id}
+            className="drop"
+            style={{ left: drop.left, animationDelay: drop.delay, animationDuration: drop.duration }}
+          />
+        ))}
+      </div>
+
       <section className="timer-section">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 0.5, y: 0 }}
-        >
-          Podomodro
-        </motion.h1>
+        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 0.5 }}>Podomodro</motion.h1>
 
         <div className="mode-switcher">
           {Object.keys(durations).map((key) => (
-            <button
-              key={key}
-              className={`mode-btn ${mode === key ? 'active' : ''}`}
-              onClick={() => changeMode(key)}
-            >
-              {key === 'FOCUS' ? 'Focus' : key === 'SHORT' ? 'Short Break' : 'Long Break'}
+            <button key={key} className={`mode-btn ${mode === key ? 'active' : ''}`} onClick={() => changeMode(key)}>
+              {key === 'FOCUS' ? 'Focus' : key === 'SHORT' ? 'Short' : 'Long'}
             </button>
           ))}
+        </div>
+
+        <div style={{ marginBottom: 24, opacity: 0.6 }}>
+          <select
+            className="project-select"
+            value={currentProject}
+            onChange={(e) => setCurrentProject(e.target.value)}
+          >
+            {PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
         </div>
 
         <motion.div
           className="timer-display"
           animate={{ scale: isActive ? 1.05 : 1 }}
-          transition={{ type: 'spring', stiffness: 100 }}
         >
           {formatTime(timeLeft)}
         </motion.div>
 
         <div className="timer-controls">
-          <button className="icon-btn" onClick={resetTimer}>
-            <RotateCcw size={24} />
-          </button>
+          <button className="icon-btn" onClick={resetTimer}><RotateCcw size={24} /></button>
           <button className="play-pause-btn" onClick={toggleTimer}>
             {isActive ? <Pause size={32} /> : <Play size={32} style={{ marginLeft: 4 }} />}
           </button>
-          <button className="icon-btn" onClick={() => setIsSettingsOpen(true)}>
-            <Settings size={24} />
-          </button>
+          <button className="icon-btn" onClick={() => setIsSettingsOpen(true)}><Settings size={24} /></button>
         </div>
       </section>
 
       <section className="secondary-grid">
         <div className="mixer-column">
-          <h3 className="grid-title">Mixer</h3>
+          <h3 className="grid-title">Atmosfera</h3>
           <div className="sound-list">
             {SOUNDS.map(sound => (
               <div key={sound.id} className={`sound-item ${activeSounds[sound.id] ? 'active' : ''}`}>
@@ -223,10 +275,16 @@ function App() {
         <div className="todo-column">
           <h3 className="grid-title">Tasks</h3>
           <div className="todo-container">
-            <form onSubmit={addTodo} className="todo-add-group">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (todoInput.trim()) {
+                setTodos([{ id: Date.now(), text: todoInput, completed: false, project: currentProject }, ...todos]);
+                setTodoInput('');
+              }
+            }} className="todo-add-group">
               <input
                 className="todo-input"
-                placeholder="Add a task..."
+                placeholder="Next goal..."
                 value={todoInput}
                 onChange={(e) => setTodoInput(e.target.value)}
               />
@@ -235,25 +293,15 @@ function App() {
             <div className="todo-list-minimal">
               <AnimatePresence initial={false}>
                 {todos.map(todo => (
-                  <motion.div
-                    key={todo.id}
-                    className={`todo-item-minimal ${todo.completed ? 'completed' : ''}`}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0 }}
-                  >
+                  <motion.div key={todo.id} className={`todo-item-minimal ${todo.completed ? 'completed' : ''}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div
-                        className={`todo-check-btn ${todo.completed ? 'checked' : ''}`}
-                        onClick={() => setTodos(todos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))}
-                      >
+                      <div className={`todo-check-btn ${todo.completed ? 'checked' : ''}`} onClick={() => setTodos(todos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))}>
                         {todo.completed && <Check size={12} color="black" />}
                       </div>
                       <span>{todo.text}</span>
+                      <span className="project-tag">{todo.project}</span>
                     </div>
-                    <button className="icon-btn" onClick={() => setTodos(todos.filter(t => t.id !== todo.id))}>
-                      <Trash2 size={14} />
-                    </button>
+                    <button className="icon-btn" onClick={() => setTodos(todos.filter(t => t.id !== todo.id))}><Trash2 size={14} /></button>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -262,63 +310,83 @@ function App() {
         </div>
       </section>
 
+      <section className="stats-panel">
+        <h3 className="grid-title">Insights</h3>
+        <div className="analytics-grid">
+          <div className="stat-card">
+            <span className="settings-label">Last 7 Days (Sessions)</span>
+            <div style={{ height: 200, marginTop: 20 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={statsData}>
+                  <XAxis dataKey="name" hide />
+                  <Tooltip
+                    contentStyle={{ background: '#171717', border: '1px solid #262626', borderRadius: '12px', fontSize: '12px' }}
+                    itemStyle={{ color: '#ededed' }}
+                  />
+                  <Bar dataKey="count" fill="var(--text-primary)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <span className="settings-label">Today by Project</span>
+            <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {PROJECTS.map(p => {
+                const count = currentProjectData[p] || 0;
+                const max = Math.max(...Object.values(currentProjectData), 1);
+                return (
+                  <div key={p} style={{ fontSize: '0.8rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span>{p}</span>
+                      <span>{count} sessions</span>
+                    </div>
+                    <div style={{ height: 4, background: 'var(--border)', borderRadius: 2 }}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(count / max) * 100}%` }}
+                        style={{ height: '100%', background: 'var(--text-primary)', borderRadius: 2 }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <AnimatePresence>
         {isSettingsOpen && (
-          <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsSettingsOpen(false)}
-          >
-            <motion.div
-              className="modal-content-minimal"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              onClick={e => e.stopPropagation()}
-            >
+          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSettingsOpen(false)}>
+            <motion.div className="modal-content-minimal" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 32 }}>
                 <h2 style={{ fontSize: '1.2rem', fontWeight: 500 }}>Settings</h2>
                 <button className="icon-btn" onClick={() => setIsSettingsOpen(false)}><X size={24} /></button>
               </div>
 
               <div className="settings-group">
-                <span className="settings-label">Timer Durations (min)</span>
+                <span className="settings-label">Durations (min)</span>
                 <div className="duration-inputs">
-                  <div className="duration-field">
-                    <label>Focus</label>
-                    <input type="number" value={durations.FOCUS} onChange={(e) => updateDuration('FOCUS', e.target.value)} />
-                  </div>
-                  <div className="duration-field">
-                    <label>Short</label>
-                    <input type="number" value={durations.SHORT} onChange={(e) => updateDuration('SHORT', e.target.value)} />
-                  </div>
-                  <div className="duration-field">
-                    <label>Long</label>
-                    <input type="number" value={durations.LONG} onChange={(e) => updateDuration('LONG', e.target.value)} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="settings-group" style={{ marginBottom: 0 }}>
-                <span className="settings-label">Background Experience</span>
-                <div className="theme-grid">
-                  {THEMES.map(theme => (
-                    <div
-                      key={theme.id}
-                      className={`theme-opt ${currentTheme === theme.id ? 'active' : ''}`}
-                      onClick={() => setCurrentTheme(theme.id)}
-                    >
-                      {theme.label}
+                  {Object.keys(durations).map(k => (
+                    <div key={k} className="duration-field">
+                      <label>{k}</label>
+                      <input type="number" value={durations[k]} onChange={(e) => setDurations({ ...durations, [k]: parseInt(e.target.value) || 0 })} />
                     </div>
                   ))}
                 </div>
               </div>
 
-              <button className="close-btn" style={{ marginTop: 40, width: '100%', padding: 16, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--text-primary)', color: 'var(--bg-primary)', fontWeight: 600, cursor: 'pointer' }} onClick={() => setIsSettingsOpen(false)}>
-                Save & Close
-              </button>
+              <div className="settings-group">
+                <span className="settings-label">Atmosphere</span>
+                <div className="theme-grid">
+                  {THEMES.map(theme => (
+                    <div key={theme.id} className={`theme-opt ${currentTheme === theme.id ? 'active' : ''}`} onClick={() => setCurrentTheme(theme.id)}>{theme.label}</div>
+                  ))}
+                </div>
+              </div>
+
+              <button className="close-btn" style={{ width: '100%', padding: 16, background: 'var(--text-primary)', color: 'var(--bg-primary)', borderRadius: 12, fontWeight: 600, border: 'none' }} onClick={() => setIsSettingsOpen(false)}>Save</button>
             </motion.div>
           </motion.div>
         )}

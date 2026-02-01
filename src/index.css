@@ -15,20 +15,33 @@
   --transition: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark Mode by Default */
-body {
-  --bg-primary: #0a0a0a;
-  --text-primary: #ededed;
-  --text-secondary: #a1a1a1;
-  --accent: #ffffff;
-  --border: #262626;
-  --glass-bg: rgba(0, 0, 0, 0.4);
+/* Glass & Effects */
+.rain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 2s var(--transition);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+body.theme-rain .rain-overlay {
+  opacity: 0.4;
+}
+
+.drop {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.25));
+  width: 1px;
+  height: 50px;
+  position: absolute;
+  bottom: 200%;
+  animation: fall 0.8s linear infinite;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh);
+  }
 }
 
 body {
@@ -234,10 +247,80 @@ h1 {
 /* Secondary Screens */
 .secondary-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1fr 320px;
   gap: 80px;
   padding-top: 40px;
   border-top: 1px solid var(--border);
+}
+
+/* Projects & Stats Panel */
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  border-top: 1px solid var(--border);
+  padding-top: 40px;
+  margin-top: 60px;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+}
+
+.stat-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+/* Tagging Styles */
+.project-tag {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  margin-left: 8px;
+  color: var(--text-secondary);
+}
+
+.project-select {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.project-select:hover {
+  color: var(--text-primary);
+}
+
+.project-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.dot.active {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
 }
 
 @media (max-width: 850px) {
