@@ -23,9 +23,5 @@
       "dest": "/index.html",
       "status": 200
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "JWT_SECRET": "@jwt_secret"
-  }
+  ]
 }
