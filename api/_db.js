@@ -1,4 +1,4 @@
-const { Pool } = require('@neondatabase/serverless');
+import { Pool } from '@neondatabase/serverless';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -7,7 +7,7 @@ const pool = new Pool({
   }
 });
 
-async function query(text, params) {
+export async function query(text, params) {
   const client = await pool.connect();
   try {
     const result = await client.query(text, params);
@@ -17,8 +17,8 @@ async function query(text, params) {
   }
 }
 
-async function getClient() {
+export async function getClient() {
   return await pool.connect();
 }
 
-module.exports = { query, getClient, pool };
+export { pool };

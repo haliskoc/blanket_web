@@ -1,9 +1,9 @@
-const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
-const { query } = require('../_db.cjs');
-const { generateToken } = require('../_auth.cjs');
+import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
+import { query } from '../_db.js';
+import { generateToken } from '../_auth.js';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,23 +13,23 @@ module.exports = async (req, res) => {
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).cjson({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
     const { email, password, username, displayName } = req.body;
 
     if (!email || !password || !username) {
-      return res.status(400).cjson({ error: 'Email, password, and username are required' });
+      return res.status(400).json({ error: 'Email, password, and username are required' });
     }
 
     if (password.length < 6) {
-      return res.status(400).cjson({ error: 'Password must be at least 6 characters' });
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
     const existingUser = await query('SELECT id FROM users WHERE email = $1 OR username = $2', [email, username]);
     if (existingUser.rows.length > 0) {
-      return res.status(409).cjson({ error: 'User already exists' });
+      return res.status(409).json({ error: 'User already exists' });
     }
 
     const userId = uuidv4();
@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
 
     const token = generateToken(userId, email);
 
-    return res.status(201).cjson({
+    return res.status(201).json({
       user: {
         id: userId,
         email,
@@ -63,6 +63,6 @@ module.exports = async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    return res.status(500).cjson({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
-};
+}

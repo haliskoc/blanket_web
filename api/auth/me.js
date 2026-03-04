@@ -1,5 +1,5 @@
-const { query } = require('../_db.cjs');
-const { authMiddleware } = require('../_auth.cjs');
+import { query } from '../_db.js';
+import { authMiddleware } from '../_auth.js';
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,7 +11,7 @@ async function handler(req, res) {
   }
 
   if (req.method !== 'GET') {
-    return res.status(405).cjson({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
@@ -26,12 +26,12 @@ async function handler(req, res) {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).cjson({ error: 'User not found' });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     const user = result.rows[0];
 
-    return res.status(200).cjson({
+    return res.status(200).json({
       user: {
         id: user.id,
         email: user.email,
@@ -49,8 +49,8 @@ async function handler(req, res) {
     });
   } catch (error) {
     console.error('Get user error:', error);
-    return res.status(500).cjson({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
 
-module.exports = authMiddleware(handler);
+export default authMiddleware(handler);
