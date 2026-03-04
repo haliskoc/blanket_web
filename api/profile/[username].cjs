@@ -1,5 +1,5 @@
-import { query } from '../_db.js';
-import { optionalAuthMiddleware } from '../_auth.js';
+import { query } from '../_db.cjs';
+import { optionalAuthMiddleware } from '../_auth.cjs';
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,13 +11,13 @@ async function handler(req, res) {
   }
 
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).cjson({ error: 'Method not allowed' });
   }
 
   const { username } = req.query;
 
   if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
+    return res.status(400).cjson({ error: 'Username is required' });
   }
 
   try {
@@ -43,7 +43,7 @@ async function handler(req, res) {
     );
 
     if (profileResult.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).cjson({ error: 'User not found' });
     }
 
     const profile = profileResult.rows[0];
@@ -53,7 +53,7 @@ async function handler(req, res) {
       const isOwner = req.userId === profile.user_id;
 
       if (!isOwner && !isFriend) {
-        return res.status(403).json({ 
+        return res.status(403).cjson({ 
           error: 'Private profile',
           isPrivate: true,
           username: profile.username,
@@ -91,7 +91,7 @@ async function handler(req, res) {
       [profile.user_id]
     );
 
-    return res.status(200).json({
+    return res.status(200).cjson({
       profile: {
         id: profile.user_id,
         username: profile.username,
@@ -126,7 +126,7 @@ async function handler(req, res) {
     });
   } catch (error) {
     console.error('Profile error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).cjson({ error: 'Internal server error' });
   }
 }
 

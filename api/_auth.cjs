@@ -23,14 +23,14 @@ function authMiddleware(handler) {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).cjson({ error: 'Unauthorized' });
     }
 
     const token = authHeader.substring(7);
     const decoded = verifyToken(token);
 
     if (!decoded) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).cjson({ error: 'Invalid token' });
     }
 
     req.userId = decoded.userId;

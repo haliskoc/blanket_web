@@ -1,5 +1,5 @@
-import { query, transaction } from '../_db.js';
-import { authMiddleware } from '../_auth.js';
+import { query, transaction } from '../_db.cjs';
+import { authMiddleware } from '../_auth.cjs';
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,11 +16,11 @@ async function handler(req, res) {
     } else if (req.method === 'POST') {
       return await postData(req, res);
     } else {
-      return res.status(405).json({ error: 'Method not allowed' });
+      return res.status(405).cjson({ error: 'Method not allowed' });
     }
   } catch (error) {
     console.error('Sync error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).cjson({ error: 'Internal server error' });
   }
 }
 
@@ -60,7 +60,7 @@ async function getData(req, res) {
     updatedAt: task.updated_at,
   }));
 
-  return res.status(200).json({
+  return res.status(200).cjson({
     profile,
     tasks: formattedTasks,
     sessions,
@@ -179,7 +179,7 @@ async function postData(req, res) {
     );
   });
 
-  return res.status(200).json({
+  return res.status(200).cjson({
     success: true,
     timestamp: new Date().toISOString(),
   });

@@ -1,5 +1,5 @@
-import { query, transaction } from '../_db.js';
-import { authMiddleware, optionalAuthMiddleware } from '../_auth.js';
+import { query, transaction } from '../_db.cjs';
+import { authMiddleware, optionalAuthMiddleware } from '../_auth.cjs';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   const { id } = req.query;
 
   if (!id) {
-    return res.status(400).json({ error: 'Room ID is required' });
+    return res.status(400).cjson({ error: 'Room ID is required' });
   }
 
   try {
@@ -27,11 +27,11 @@ export default async function handler(req, res) {
       case 'DELETE':
         return await leaveRoom(req, res, id);
       default:
-        return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).cjson({ error: 'Method not allowed' });
     }
   } catch (error) {
     console.error('Room detail error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).cjson({ error: 'Internal server error' });
   }
 }
 
@@ -49,13 +49,13 @@ async function getRoom(req, res, roomId) {
   );
 
   if (roomResult.rows.length === 0) {
-    return res.status(404).json({ error: 'Room not found' });
+    return res.status(404).cjson({ error: 'Room not found' });
   }
 
   const room = roomResult.rows[0];
 
   if (room.is_private && !req.userId) {
-    return res.status(403).json({ error: 'Private room - authentication required' });
+    return res.status(403).cjson({ error: 'Private room - authentication required' });
   }
 
   const participantsResult = await query(
@@ -80,7 +80,7 @@ async function getRoom(req, res, roomId) {
 
   const isParticipant = req.userId && participantsResult.rows.some(p => p.user_id === req.userId);
 
-  return res.status(200).json({
+  return res.status(200).cjson({
     room: {
       id: room.id,
       name: room.name,
@@ -115,7 +115,7 @@ async function getRoom(req, res, roomId) {
 
 async function joinRoom(req, res, roomId) {
   if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
+    return res.status(401).cjson({ error: 'Authentication required' });
   }
 
   const { password } = req.body;
@@ -126,13 +126,13 @@ async function joinRoom(req, res, roomId) {
   );
 
   if (roomResult.rows.length === 0) {
-    return res.status(404).json({ error: 'Room not found' });
+    return res.status(404).cjson({ error: 'Room not found' });
   }
 
   const room = roomResult.rows[0];
 
   if (room.status !== 'active') {
-    return res.status(400).json({ error: 'Room is not active' });
+    return res.status(400).cjson({ error: 'Room is not active' });
   }
 
   const participantCountResult = await query(
@@ -143,7 +143,7 @@ async function joinRoom(req, res, roomId) {
   const participantCount = parseInt(participantCountResult.rows[0].count);
 
   if (participantCount >= room.max_participants) {
-    return res.status(400).json({ error: 'Room is full' });
+    return res.status(400).cjson({ error: 'Room is full' });
   }
 
   const existingParticipant = await query(
@@ -152,11 +152,11 @@ async function joinRoom(req, res, roomId) {
   );
 
   if (existingParticipant.rows.length > 0) {
-    return res.status(200).json({ message: 'Already in room', joined: false });
+    return res.status(200).cjson({ message: 'Already in room', joined: false });
   }
 
   if (room.is_private && room.password_hash && room.password_hash !== password) {
-    return res.status(403).json({ error: 'Invalid room password' });
+    return res.status(403).cjson({ error: 'Invalid room password' });
   }
 
   await query(
@@ -168,12 +168,12 @@ async function joinRoom(req, res, roomId) {
     [roomId, req.userId]
   );
 
-  return res.status(200).json({ message: 'Joined room successfully', joined: true });
+  return res.status(200).cjson({ message: 'Joined room successfully', joined: true });
 }
 
 async function updateRoom(req, res, roomId) {
   if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
+    return res.status(401).cjson({ error: 'Authentication required' });
   }
 
   const participantResult = await query(
@@ -182,7 +182,7 @@ async function updateRoom(req, res, roomId) {
   );
 
   if (participantResult.rows.length === 0) {
-    return res.status(403).json({ error: 'Only host can update room' });
+    return res.status(403).cjson({ error: 'Only host can update room' });
   }
 
   const { name, description, status, maxParticipants } = req.body;
@@ -209,7 +209,7 @@ async function updateRoom(req, res, roomId) {
   }
 
   if (updates.length === 0) {
-    return res.status(400).json({ error: 'No fields to update' });
+    return res.status(400).cjson({ error: 'No fields to update' });
   }
 
   updates.push(`updated_at = NOW()`);
@@ -220,12 +220,12 @@ async function updateRoom(req, res, roomId) {
     values
   );
 
-  return res.status(200).json({ message: 'Room updated successfully' });
+  return res.status(200).cjson({ message: 'Room updated successfully' });
 }
 
 async function leaveRoom(req, res, roomId) {
   if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
+    return res.status(401).cjson({ error: 'Authentication required' });
   }
 
   await query(
@@ -247,5 +247,5 @@ async function leaveRoom(req, res, roomId) {
     );
   }
 
-  return res.status(200).json({ message: 'Left room successfully' });
+  return res.status(200).cjson({ message: 'Left room successfully' });
 }

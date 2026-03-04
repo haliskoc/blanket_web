@@ -1,5 +1,5 @@
-import { query, transaction } from '../_db.js';
-import { authMiddleware, optionalAuthMiddleware } from '../_auth.js';
+import { query, transaction } from '../_db.cjs';
+import { authMiddleware, optionalAuthMiddleware } from '../_auth.cjs';
 import { v4 as uuidv4 } from 'uuid';
 
 async function handler(req, res) {
@@ -17,11 +17,11 @@ async function handler(req, res) {
     } else if (req.method === 'POST') {
       return await createRoom(req, res);
     } else {
-      return res.status(405).json({ error: 'Method not allowed' });
+      return res.status(405).cjson({ error: 'Method not allowed' });
     }
   } catch (error) {
     console.error('Rooms error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).cjson({ error: 'Internal server error' });
   }
 }
 
@@ -72,7 +72,7 @@ async function getRooms(req, res) {
     [status]
   );
 
-  return res.status(200).json({
+  return res.status(200).cjson({
     rooms: result.rows.map(room => ({
       id: room.id,
       name: room.name,
@@ -99,13 +99,13 @@ async function getRooms(req, res) {
 
 async function createRoom(req, res) {
   if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
+    return res.status(401).cjson({ error: 'Authentication required' });
   }
 
   const { name, description, isPrivate = false, maxParticipants = 10, password } = req.body;
 
   if (!name || name.trim().length < 3) {
-    return res.status(400).json({ error: 'Room name must be at least 3 characters' });
+    return res.status(400).cjson({ error: 'Room name must be at least 3 characters' });
   }
 
   const roomId = uuidv4();
@@ -137,7 +137,7 @@ async function createRoom(req, res) {
 
   const room = roomResult.rows[0];
 
-  return res.status(201).json({
+  return res.status(201).cjson({
     room: {
       id: room.id,
       name: room.name,

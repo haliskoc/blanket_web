@@ -1,5 +1,5 @@
-import { query, transaction } from '../_db.js';
-import { authMiddleware } from '../_auth.js';
+import { query, transaction } from '../_db.cjs';
+import { authMiddleware } from '../_auth.cjs';
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,11 +21,11 @@ async function handler(req, res) {
       case 'DELETE':
         return await removeFriend(req, res);
       default:
-        return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).cjson({ error: 'Method not allowed' });
     }
   } catch (error) {
     console.error('Friends error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).cjson({ error: 'Internal server error' });
   }
 }
 
@@ -63,7 +63,7 @@ async function getFriends(req, res) {
     [req.userId, status]
   );
 
-  return res.status(200).json({
+  return res.status(200).cjson({
     friends: result.rows.map(row => ({
       friendshipId: row.friendship_id,
       userId: row.other_user_id,
@@ -87,7 +87,7 @@ async function addFriend(req, res) {
   const { username } = req.body;
 
   if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
+    return res.status(400).cjson({ error: 'Username is required' });
   }
 
   const profileResult = await query(
@@ -96,13 +96,13 @@ async function addFriend(req, res) {
   );
 
   if (profileResult.rows.length === 0) {
-    return res.status(404).json({ error: 'User not found' });
+    return res.status(404).cjson({ error: 'User not found' });
   }
 
   const friendId = profileResult.rows[0].user_id;
 
   if (friendId === req.userId) {
-    return res.status(400).json({ error: 'Cannot add yourself as friend' });
+    return res.status(400).cjson({ error: 'Cannot add yourself as friend' });
   }
 
   const existingResult = await query(
@@ -114,9 +114,9 @@ async function addFriend(req, res) {
   if (existingResult.rows.length > 0) {
     const existing = existingResult.rows[0];
     if (existing.status === 'accepted') {
-      return res.status(409).json({ error: 'Already friends' });
+      return res.status(409).cjson({ error: 'Already friends' });
     } else if (existing.status === 'pending') {
-      return res.status(409).json({ error: 'Friend request already pending' });
+      return res.status(409).cjson({ error: 'Friend request already pending' });
     }
   }
 
@@ -126,14 +126,14 @@ async function addFriend(req, res) {
     [req.userId, friendId]
   );
 
-  return res.status(201).json({ message: 'Friend request sent' });
+  return res.status(201).cjson({ message: 'Friend request sent' });
 }
 
 async function updateFriendship(req, res) {
   const { friendshipId, action } = req.body;
 
   if (!friendshipId || !action) {
-    return res.status(400).json({ error: 'Friendship ID and action are required' });
+    return res.status(400).cjson({ error: 'Friendship ID and action are required' });
   }
 
   const friendshipResult = await query(
@@ -142,13 +142,13 @@ async function updateFriendship(req, res) {
   );
 
   if (friendshipResult.rows.length === 0) {
-    return res.status(404).json({ error: 'Friendship not found' });
+    return res.status(404).cjson({ error: 'Friendship not found' });
   }
 
   const friendship = friendshipResult.rows[0];
 
   if (friendship.friend_id !== req.userId) {
-    return res.status(403).json({ error: 'Can only respond to requests sent to you' });
+    return res.status(403).cjson({ error: 'Can only respond to requests sent to you' });
   }
 
   if (action === 'accept') {
@@ -158,7 +158,7 @@ async function updateFriendship(req, res) {
        WHERE id = $1`,
       [friendshipId]
     );
-    return res.status(200).json({ message: 'Friend request accepted' });
+    return res.status(200).cjson({ message: 'Friend request accepted' });
   } else if (action === 'reject') {
     await query(
       `UPDATE friendships 
@@ -166,9 +166,9 @@ async function updateFriendship(req, res) {
        WHERE id = $1`,
       [friendshipId]
     );
-    return res.status(200).json({ message: 'Friend request rejected' });
+    return res.status(200).cjson({ message: 'Friend request rejected' });
   } else {
-    return res.status(400).json({ error: 'Invalid action' });
+    return res.status(400).cjson({ error: 'Invalid action' });
   }
 }
 
@@ -176,7 +176,7 @@ async function removeFriend(req, res) {
   const { userId: friendId } = req.query;
 
   if (!friendId) {
-    return res.status(400).json({ error: 'Friend ID is required' });
+    return res.status(400).cjson({ error: 'Friend ID is required' });
   }
 
   await query(
@@ -185,7 +185,7 @@ async function removeFriend(req, res) {
     [req.userId, friendId]
   );
 
-  return res.status(200).json({ message: 'Friend removed' });
+  return res.status(200).cjson({ message: 'Friend removed' });
 }
 
 export default authMiddleware(handler);

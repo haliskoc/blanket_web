@@ -1,5 +1,5 @@
-const { query } = require('./_db.js');
-const { optionalAuthMiddleware } = require('./_auth.js');
+const { query } = require('./_db.cjs');
+const { optionalAuthMiddleware } = require('./_auth.cjs');
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,7 +11,7 @@ async function handler(req, res) {
   }
 
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).cjson({ error: 'Method not allowed' });
   }
 
   try {
@@ -28,7 +28,7 @@ async function handler(req, res) {
 
     const userRank = req.userId ? await getUserRank(req.userId, period, category) : null;
 
-    return res.status(200).json({
+    return res.status(200).cjson({
       leaderboard: result,
       userRank,
       period,
@@ -36,7 +36,7 @@ async function handler(req, res) {
     });
   } catch (error) {
     console.error('Leaderboard error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).cjson({ error: 'Internal server error' });
   }
 }
 

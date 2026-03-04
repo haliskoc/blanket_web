@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
-const { query } = require('../_db.js');
-const { generateToken } = require('../_auth.js');
+const { query } = require('../_db.cjs');
+const { generateToken } = require('../_auth.cjs');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,14 +12,14 @@ module.exports = async (req, res) => {
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).cjson({ error: 'Method not allowed' });
   }
 
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).cjson({ error: 'Email and password are required' });
     }
 
     const result = await query(
@@ -28,19 +28,19 @@ module.exports = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).cjson({ error: 'Invalid credentials' });
     }
 
     const user = result.rows[0];
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).cjson({ error: 'Invalid credentials' });
     }
 
     const token = generateToken(user.id, user.email);
 
-    return res.status(200).json({
+    return res.status(200).cjson({
       user: {
         id: user.id,
         email: user.email,
@@ -51,6 +51,6 @@ module.exports = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).cjson({ error: 'Internal server error' });
   }
 };
