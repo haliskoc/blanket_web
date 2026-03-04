@@ -3,12 +3,89 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Podomodro - Premium Pomodoro Timer & Ambient Sounds</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#ff3b3b" />
+    <meta name="background-color" content="#0a0a0f" />
     <meta name="description" content="Boost your productivity with Podomodro, a modern Pomodoro timer featuring immersive ambient sounds and a sleek design." />
+    <meta name="keywords" content="pomodoro, timer, productivity, ambient sounds, focus, study" />
+    <meta name="author" content="Podomodro" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Mobile Web App Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Podomodro" />
+    <meta name="application-name" content="Podomodro" />
+    <meta name="msapplication-TileColor" content="#ff3b3b" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="/icon-192.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/icon-192.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/icon-192.svg" />
+    <link rel="mask-icon" href="/icon-192.svg" color="#ff3b3b" />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Podomodro - Premium Pomodoro Timer & Ambient Sounds" />
+    <meta property="og:description" content="Boost your productivity with immersive ambient sounds and a sleek Pomodoro timer." />
+    <meta property="og:image" content="/icon-512.svg" />
+    <meta property="og:url" content="https://podomodro.app" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Podomodro - Premium Pomodoro Timer" />
+    <meta name="twitter:description" content="Boost your productivity with immersive ambient sounds and a sleek Pomodoro timer." />
+    <meta name="twitter:image" content="/icon-512.svg" />
+    
+    <title>Podomodro - Premium Pomodoro Timer & Ambient Sounds</title>
+    
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://raw.githubusercontent.com" />
+    <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
+    <link rel="preconnect" href="https://assets.mixkit.co" />
+    <link rel="dns-prefetch" href="https://assets.mixkit.co" />
+    
+    <!-- Prevent flash of wrong theme -->
+    <style>
+      html, body {
+        background-color: #0a0a0f;
+        color: #ffffff;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- No-JavaScript Fallback -->
+    <noscript>
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; background: #0a0a0f; color: #ffffff; font-family: system-ui, -apple-system, sans-serif;">
+        <h1 style="color: #ff3b3b; margin-bottom: 16px;">JavaScript Required</h1>
+        <p>Podomodro requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
+      </div>
+    </noscript>
+    
+    <!-- Offline indicator fallback -->
+    <script>
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

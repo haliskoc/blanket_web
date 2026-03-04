@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Routes, Route, NavLink } from 'react-router-dom';
 import {
   Play, Pause, RotateCcw, Settings, X,
   Plus, Check, Trash2, Tag, CloudRain, TreePine,
@@ -9,7 +9,8 @@ import {
   TrendingUp, Calendar, Bell, BellOff, Volume2, ChevronDown,
   ChevronUp, GripVertical, AlertCircle, Circle,
   Moon, Ship, Waves, Maximize2, Minimize2, Download, Upload,
-  StickyNote, Droplets, Eye, Activity
+  StickyNote, Droplets, Eye, Activity, User, Cloud,
+  Users, Medal, Search
 } from 'lucide-react';
 import { Howl } from 'howler';
 import { motion, AnimatePresence, LayoutGroup, Reorder } from 'framer-motion';
@@ -17,7 +18,24 @@ import {
   BarChart, Bar, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, PieChart, Pie, Cell
 } from 'recharts';
 import confetti from 'canvas-confetti';
+import { useAuth } from './contexts/AuthContext.jsx';
+import { useSync } from './contexts/SyncContext.jsx';
+import SyncStatus from './components/SyncStatus.jsx';
+import CloudBackupSettings from './components/CloudBackupSettings.jsx';
+import ConflictResolver from './components/ConflictResolver.jsx';
+import LoginPage from './pages/LoginPage.jsx';
+import AuthCallback from './pages/AuthCallback.jsx';
+import LeaderboardPage from './pages/LeaderboardPage.jsx';
+import RoomsPage from './pages/RoomsPage.jsx';
+import RoomPage from './pages/RoomPage.jsx';
+import PublicProfilePage from './pages/PublicProfilePage.jsx';
+import ReportsPage from './pages/ReportsPage.jsx';
+import FriendList from './components/FriendList.jsx';
+import UserSearch from './components/UserSearch.jsx';
+import { PWAManager } from './components/PWAInstallPrompt';
 import './App.css';
+import './social-features.css';
+import './reports.css';
 
 const SOUND_BASE_URL = 'https://raw.githubusercontent.com/rafaelmardojai/blanket/master/data/resources/sounds/';
 
@@ -91,7 +109,7 @@ const BADGES = [
 ];
 
 // Context for shared state
-const AppContext = React.createContext();
+export const AppContext = React.createContext();
 
 function AppProvider({ children }) {
   const [projects, setProjects] = useState(() => {
@@ -290,52 +308,108 @@ function AppProvider({ children }) {
 // Navbar Component
 function Navbar() {
   const { achievements, goals, dailyStats } = React.useContext(AppContext);
+  const { isAuthenticated, signOut } = useAuth();
   const today = new Date().toISOString().split('T')[0];
   const todayStats = dailyStats[today] || { count: 0 };
   const progress = Math.min((todayStats.count / goals.daily) * 100, 100);
+  const [showFriendList, setShowFriendList] = useState(false);
+  const [showUserSearch, setShowUserSearch] = useState(false);
 
   return (
-    <nav className="navbar">
-      <div className="navbar-brand">
-        <Clock size={24} />
-        <span>Podomodro</span>
-      </div>
-      
-      <div className="navbar-center">
-        <div className="daily-progress-mini">
-          <Target size={16} />
-          <div className="progress-bar-mini">
-            <div className="progress-fill-mini" style={{ width: `${progress}%` }} />
-          </div>
-          <span>{todayStats.count}/{goals.daily}</span>
+    <>
+      <nav className="navbar">
+        <div className="navbar-brand">
+          <Clock size={24} />
+          <span>Podomodro</span>
         </div>
-        {achievements.currentStreak > 0 && (
-          <div className="streak-badge">
-            <Flame size={16} />
-            <span>{achievements.currentStreak}</span>
+        
+        <div className="navbar-center">
+          <div className="daily-progress-mini">
+            <Target size={16} />
+            <div className="progress-bar-mini">
+              <div className="progress-fill-mini" style={{ width: `${progress}%` }} />
+            </div>
+            <span>{todayStats.count}/{goals.daily}</span>
           </div>
-        )}
-      </div>
+          {achievements.currentStreak > 0 && (
+            <div className="streak-badge">
+              <Flame size={16} />
+              <span>{achievements.currentStreak}</span>
+            </div>
+          )}
+          <SyncStatus />
+        </div>
 
-      <div className="navbar-links">
-        <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} end>
-          <Home size={18} />
-          <span>Timer</span>
-        </NavLink>
-        <NavLink to="/tasks" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <ListTodo size={18} />
-          <span>Tasks</span>
-        </NavLink>
-        <NavLink to="/stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <BarChart3 size={18} />
-          <span>Stats</span>
-        </NavLink>
-        <NavLink to="/achievements" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <Trophy size={18} />
-          <span>Badges</span>
-        </NavLink>
-      </div>
-    </nav>
+        <div className="navbar-links">
+          <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} end>
+            <Home size={18} />
+            <span>Timer</span>
+          </NavLink>
+          <NavLink to="/tasks" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <ListTodo size={18} />
+            <span>Tasks</span>
+          </NavLink>
+          <NavLink to="/stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <BarChart3 size={18} />
+            <span>Stats</span>
+          </NavLink>
+          <NavLink to="/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <TrendingUp size={18} />
+            <span>Reports</span>
+          </NavLink>
+          <NavLink to="/leaderboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <Medal size={18} />
+            <span>Leaderboard</span>
+          </NavLink>
+          <NavLink to="/rooms" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <Users size={18} />
+            <span>Rooms</span>
+          </NavLink>
+          <NavLink to="/achievements" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <Trophy size={18} />
+            <span>Badges</span>
+          </NavLink>
+          {isAuthenticated && (
+            <>
+              <button 
+                className="nav-link"
+                onClick={() => setShowFriendList(true)}
+                title="Friends"
+              >
+                <Users size={18} />
+                <span>Friends</span>
+              </button>
+              <button 
+                className="nav-link"
+                onClick={() => setShowUserSearch(true)}
+                title="Find Friends"
+              >
+                <Search size={18} />
+                <span>Find</span>
+              </button>
+            </>
+          )}
+          {isAuthenticated ? (
+            <button 
+              className="nav-link user-btn"
+              onClick={() => signOut()}
+              title="Sign Out"
+            >
+              <User size={18} />
+              <span>Sign Out</span>
+            </button>
+          ) : (
+            <NavLink to="/login" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Cloud size={18} />
+              <span>Sync</span>
+            </NavLink>
+          )}
+        </div>
+      </nav>
+
+      <FriendList isOpen={showFriendList} onClose={() => setShowFriendList(false)} />
+      <UserSearch isOpen={showUserSearch} onClose={() => setShowUserSearch(false)} />
+    </>
   );
 }
 
@@ -430,6 +504,20 @@ function TimerPage() {
     }
   };
 
+  // Toggle Timer
+  const toggleTimer = () => setIsActive(!isActive);
+
+  // Toggle Mute All Sounds
+  const toggleMuteAll = () => {
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    Object.keys(soundInstances.current).forEach(key => {
+      if (soundInstances.current[key]) {
+        soundInstances.current[key].mute(newMuted);
+      }
+    });
+  };
+
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -468,17 +556,6 @@ function TimerPage() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isActive, mode, durations]);
 
-  // Toggle Mute All Sounds
-  const toggleMuteAll = () => {
-    const newMuted = !isMuted;
-    setIsMuted(newMuted);
-    Object.keys(soundInstances.current).forEach(key => {
-      if (soundInstances.current[key]) {
-        soundInstances.current[key].mute(newMuted);
-      }
-    });
-  };
-
   // Save Quick Notes to localStorage
   useEffect(() => {
     localStorage.setItem('podomodro-quick-notes', JSON.stringify(quickNotes));
@@ -497,7 +574,7 @@ function TimerPage() {
   // Auto Theme Timer
   useEffect(() => {
     if (!autoTheme) return;
-    
+
     const checkTimeTheme = () => {
       const hour = new Date().getHours();
       if (hour >= 6 && hour < 18) {
@@ -508,11 +585,91 @@ function TimerPage() {
         setCurrentTheme('space');
       }
     };
-    
+
     checkTimeTheme();
     const interval = setInterval(checkTimeTheme, 60000);
     return () => clearInterval(interval);
-  }, [autoTheme]);
+  }, [autoTheme, setCurrentTheme]);
+
+  // Handle Session Complete - defined before useEffect that uses it
+  const handleSessionComplete = React.useCallback(() => {
+    // Play alarm sound
+    const alarmSound = ALARM_SOUNDS.find(s => s.id === settings.alarmSound) || ALARM_SOUNDS[0];
+    alarmRef.current = new Howl({
+      src: [alarmSound.url],
+      volume: settings.alarmVolume
+    });
+    alarmRef.current.play();
+
+    confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 }, colors: ['#ffffff', '#ff3b3b'] });
+
+    // Send browser notification
+    if (settings.notifications && notificationPermission === 'granted') {
+      const title = mode === 'FOCUS' ? '🎉 Focus session complete!' : '☕ Break is over!';
+      const body = mode === 'FOCUS' ? 'Great work! Time for a break.' : 'Ready to focus again?';
+      new Notification(title, { body, icon: '/favicon.ico' });
+    }
+
+    if (mode === 'FOCUS') {
+      const today = new Date().toISOString().split('T')[0];
+      const hour = new Date().getHours();
+
+      // Update daily stats
+      setDailyStats(prev => {
+        const newStats = { ...prev };
+        if (!newStats[today]) newStats[today] = { count: 0, projects: {}, hours: {} };
+        newStats[today].count += 1;
+        newStats[today].projects[currentProject?.name || 'Unknown'] = (newStats[today].projects[currentProject?.name || 'Unknown'] || 0) + 1;
+        newStats[today].hours[hour] = (newStats[today].hours[hour] || 0) + 1;
+        return newStats;
+      });
+
+      // Update achievements
+      setAchievements(prev => {
+        const newAchievements = {
+          ...prev,
+          totalPomodoros: prev.totalPomodoros + 1,
+          earlyBird: prev.earlyBird || hour < 8,
+          nightOwl: prev.nightOwl || hour >= 22,
+        };
+
+        // Check if daily goal reached
+        const todayCount = (dailyStats[today]?.count || 0) + 1;
+        if (todayCount >= goals.daily && (dailyStats[today]?.count || 0) < goals.daily) {
+          newAchievements.dailyGoalsReached = prev.dailyGoalsReached + 1;
+        }
+
+        return newAchievements;
+      });
+
+      updateStreak();
+      setPomodoroCount(prev => prev + 1);
+
+      // Auto start break
+      if (settings.autoStartBreak) {
+        setPomodoroCount(prev => {
+          const newPomodoroCount = prev;
+          if (newPomodoroCount % settings.longBreakInterval === 0) {
+            setMode('LONG');
+            setTimeout(() => setIsActive(true), 2000);
+          } else {
+            setMode('SHORT');
+            setTimeout(() => setIsActive(true), 2000);
+          }
+          return prev;
+        });
+      }
+
+      // Check for new badges
+      setTimeout(checkBadges, 1000);
+    } else {
+      // Break finished, auto start focus if enabled
+      if (settings.autoStartFocus) {
+        setMode('FOCUS');
+        setTimeout(() => setIsActive(true), 2000);
+      }
+    }
+  }, [mode, settings, notificationPermission, currentProject, dailyStats, goals, setDailyStats, setAchievements, updateStreak, checkBadges, setMode, setIsActive]);
 
   // Apply Sound Preset
   const applyPreset = (presetSounds) => {
@@ -642,85 +799,7 @@ function TimerPage() {
       handleSessionComplete();
     }
     return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
-
-  const handleSessionComplete = () => {
-    // Play alarm sound
-    const alarmSound = ALARM_SOUNDS.find(s => s.id === settings.alarmSound) || ALARM_SOUNDS[0];
-    alarmRef.current = new Howl({ 
-      src: [alarmSound.url], 
-      volume: settings.alarmVolume 
-    });
-    alarmRef.current.play();
-    
-    confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 }, colors: ['#ffffff', '#ff3b3b'] });
-
-    // Send browser notification
-    if (settings.notifications && notificationPermission === 'granted') {
-      const title = mode === 'FOCUS' ? '🎉 Focus session complete!' : '☕ Break is over!';
-      const body = mode === 'FOCUS' ? 'Great work! Time for a break.' : 'Ready to focus again?';
-      new Notification(title, { body, icon: '/favicon.ico' });
-    }
-
-    if (mode === 'FOCUS') {
-      const today = new Date().toISOString().split('T')[0];
-      const hour = new Date().getHours();
-      
-      // Update daily stats
-      setDailyStats(prev => {
-        const newStats = { ...prev };
-        if (!newStats[today]) newStats[today] = { count: 0, projects: {}, hours: {} };
-        newStats[today].count += 1;
-        newStats[today].projects[currentProject?.name || 'Unknown'] = (newStats[today].projects[currentProject?.name || 'Unknown'] || 0) + 1;
-        newStats[today].hours[hour] = (newStats[today].hours[hour] || 0) + 1;
-        return newStats;
-      });
-
-      // Update achievements
-      setAchievements(prev => {
-        const newAchievements = {
-          ...prev,
-          totalPomodoros: prev.totalPomodoros + 1,
-          earlyBird: prev.earlyBird || hour < 8,
-          nightOwl: prev.nightOwl || hour >= 22,
-        };
-
-        // Check if daily goal reached
-        const todayCount = (dailyStats[today]?.count || 0) + 1;
-        if (todayCount >= goals.daily && (dailyStats[today]?.count || 0) < goals.daily) {
-          newAchievements.dailyGoalsReached = prev.dailyGoalsReached + 1;
-        }
-
-        return newAchievements;
-      });
-
-      updateStreak();
-      setPomodoroCount(prev => prev + 1);
-
-      // Auto start break
-      if (settings.autoStartBreak) {
-        const newPomodoroCount = pomodoroCount + 1;
-        if (newPomodoroCount % settings.longBreakInterval === 0) {
-          setMode('LONG');
-          setTimeout(() => setIsActive(true), 2000);
-        } else {
-          setMode('SHORT');
-          setTimeout(() => setIsActive(true), 2000);
-        }
-      }
-
-      // Check for new badges
-      setTimeout(checkBadges, 1000);
-    } else {
-      // Break finished, auto start focus if enabled
-      if (settings.autoStartFocus) {
-        setMode('FOCUS');
-        setTimeout(() => setIsActive(true), 2000);
-      }
-    }
-  };
-
-  const toggleTimer = () => setIsActive(!isActive);
+  }, [isActive, timeLeft, handleSessionComplete]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -1249,6 +1328,11 @@ function TimerPage() {
                   <div className="shortcut-item"><kbd>F</kbd> Focus Mode</div>
                   <div className="shortcut-item"><kbd>Esc</kbd> Close</div>
                 </div>
+              </div>
+
+              {/* Cloud Backup Settings */}
+              <div className="settings-section">
+                <CloudBackupSettings />
               </div>
             </motion.div>
           </motion.div>
@@ -1999,22 +2083,32 @@ function AchievementsPage() {
 }
 
 function App() {
+  const { isAuthenticated } = useAuth();
+  const { conflicts, SYNC_STATUS, syncStatus } = useSync();
+
   return (
-    <Router>
-      <AppProvider>
-        <div className="app-container">
-          <Navbar />
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<TimerPage />} />
-              <Route path="/tasks" element={<TasksPage />} />
-              <Route path="/stats" element={<StatsPage />} />
-              <Route path="/achievements" element={<AchievementsPage />} />
-            </Routes>
-          </main>
-        </div>
-      </AppProvider>
-    </Router>
+    <AppProvider>
+      <div className="app-container">
+        <PWAManager />
+        <Navbar />
+        <main className="main-content">
+          {conflicts.length > 0 && <ConflictResolver />}
+          <Routes>
+            <Route path="/" element={<TimerPage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+            <Route path="/stats" element={<StatsPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/rooms" element={<RoomsPage />} />
+            <Route path="/room/:roomId" element={<RoomPage />} />
+            <Route path="/u/:username" element={<PublicProfilePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+          </Routes>
+        </main>
+      </div>
+    </AppProvider>
   );
 }
 

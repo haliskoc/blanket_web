@@ -3028,3 +3028,272 @@ body.theme-rain.focus-mode .premium-card {
     font-size: 0.8rem;
   }
 }
+/* ========================================
+   CLOUD SYNC & AUTH STYLES
+   ======================================== */
+
+/* CSS Variables for components */
+:root {
+  --bg-primary: #08080c;
+  --bg-secondary: rgba(255, 255, 255, 0.03);
+  --bg-tertiary: rgba(255, 255, 255, 0.06);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.4);
+  --accent-primary: #ff3b3b;
+  --accent-secondary: #ff6b6b;
+}
+
+/* Sync Status in Navbar */
+.navbar-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navbar-center .sync-status {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.navbar-center .sync-indicator {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-center .sync-indicator:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* User button in navbar */
+.nav-link.user-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.nav-link.user-btn:hover {
+  color: #ff3b3b;
+}
+
+/* Auth Callback Page */
+.auth-callback {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-deep);
+}
+
+.callback-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.callback-container .loading-spinner {
+  color: #ff3b3b;
+  margin-bottom: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.callback-container h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.callback-container p {
+  color: var(--text-dim);
+}
+
+.callback-container.error {
+  color: #ef4444;
+}
+
+.callback-container.error h2 {
+  color: #ef4444;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.redirect-hint {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+/* Cloud Backup Settings in Settings Modal */
+.settings-modal .cloud-settings {
+  margin-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 24px;
+}
+
+/* Icon button utility */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* ========================================
+   CLOUD SYNC & AUTH STYLES
+   ======================================== */
+
+/* CSS Variables for components */
+:root {
+  --bg-primary: #08080c;
+  --bg-secondary: rgba(255, 255, 255, 0.03);
+  --bg-tertiary: rgba(255, 255, 255, 0.06);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.4);
+  --accent-primary: #ff3b3b;
+  --accent-secondary: #ff6b6b;
+}
+
+/* Sync Status in Navbar */
+.navbar-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navbar-center .sync-status {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.navbar-center .sync-indicator {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-center .sync-indicator:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* User button in navbar */
+.nav-link.user-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.nav-link.user-btn:hover {
+  color: #ff3b3b;
+}
+
+/* Auth Callback Page */
+.auth-callback {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-deep);
+}
+
+.callback-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.callback-container .loading-spinner {
+  color: #ff3b3b;
+  margin-bottom: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.callback-container h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.callback-container p {
+  color: var(--text-dim);
+}
+
+.callback-container.error {
+  color: #ef4444;
+}
+
+.callback-container.error h2 {
+  color: #ef4444;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.redirect-hint {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+/* Cloud Backup Settings in Settings Modal */
+.settings-modal .cloud-settings {
+  margin-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 24px;
+}
+
+/* Icon button utility */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
