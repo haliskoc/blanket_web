@@ -1,25 +1,27 @@
 {
   "version": 2,
-  "buildCommand": "vite build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/auth/:path",
-      "destination": "/api/auth/:path"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     },
     {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     }
   ],
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18"
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/[^.]+",
+      "dest": "/index.html",
+      "status": 200
     }
-  }
+  ]
 }
