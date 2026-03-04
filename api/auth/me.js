@@ -1,5 +1,5 @@
-import { query } from '../_db.js';
-import { authMiddleware } from '../_auth.js';
+const { query } = require('../_db.js');
+const { authMiddleware } = require('../_auth.js');
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,52 +15,36 @@ async function handler(req, res) {
   }
 
   try {
-    const userResult = await query(
-      'SELECT id, email, created_at FROM users WHERE id = $1',
+    const result = await query(
+      `SELECT u.id, u.email, u.username, p.display_name, p.avatar_url, p.is_public,
+        us.total_pomodoros, us.total_focus_time, us.current_streak, us.longest_streak
+      FROM users u
+      JOIN profiles p ON u.id = p.user_id
+      LEFT JOIN user_stats us ON u.id = us.user_id
+      WHERE u.id = $1`,
       [req.userId]
     );
 
-    if (userResult.rows.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const user = userResult.rows[0];
-
-    const profileResult = await query(
-      `SELECT username, display_name, avatar_url, bio, is_public
-       FROM profiles WHERE user_id = $1`,
-      [req.userId]
-    );
-
-    const profile = profileResult.rows[0] || {};
-
-    const statsResult = await query(
-      `SELECT total_pomodoros, total_focus_time, current_streak, 
-              longest_streak, weekly_pomodoros, monthly_pomodoros
-       FROM user_stats WHERE user_id = $1`,
-      [req.userId]
-    );
-
-    const stats = statsResult.rows[0] || {};
+    const user = result.rows[0];
 
     return res.status(200).json({
       user: {
         id: user.id,
         email: user.email,
-        createdAt: user.created_at,
-        username: profile.username,
-        displayName: profile.display_name,
-        avatarUrl: profile.avatar_url,
-        bio: profile.bio,
-        isPublic: profile.is_public,
-      },
-      stats: {
-        totalPomodoros: stats.total_pomodoros || 0,
-        totalFocusTime: stats.total_focus_time || 0,
-        currentStreak: stats.current_streak || 0,
-        longestStreak: stats.longest_streak || 0,
-        weeklyPomodoros: stats.weekly_pomodoros || 0,
-        monthlyPomodoros: stats.monthly_pomodoros || 0,
+        username: user.username,
+        displayName: user.display_name,
+        avatarUrl: user.avatar_url,
+        isPublic: user.is_public,
+        stats: {
+          totalPomodoros: user.total_pomodoros || 0,
+          totalFocusTime: user.total_focus_time || 0,
+          currentStreak: user.current_streak || 0,
+          longestStreak: user.longest_streak || 0,
+        },
       },
     });
   } catch (error) {
@@ -69,4 +53,4 @@ async function handler(req, res) {
   }
 }
 
-export default authMiddleware(handler);
+module.exports = authMiddleware(handler);

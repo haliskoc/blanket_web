@@ -1,9 +1,9 @@
-import { query, transaction } from '../_db.js';
-import bcrypt from 'bcryptjs';
-import { generateToken } from '../_auth.js';
-import { v4 as uuidv4 } from 'uuid';
+const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
+const { query } = require('../_db.js');
+const { generateToken } = require('../_auth.js');
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -20,94 +20,49 @@ export default async function handler(req, res) {
     const { email, password, username, displayName } = req.body;
 
     if (!email || !password || !username) {
-      return res.status(400).json({ 
-        error: 'Email, password, and username are required' 
-      });
-    }
-
-    if (username.length < 3 || username.length > 30) {
-      return res.status(400).json({ 
-        error: 'Username must be between 3 and 30 characters' 
-      });
-    }
-
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      return res.status(400).json({ 
-        error: 'Username can only contain letters, numbers, and underscores' 
-      });
+      return res.status(400).json({ error: 'Email, password, and username are required' });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ 
-        error: 'Password must be at least 6 characters' 
-      });
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    const existingEmail = await query(
-      'SELECT id FROM users WHERE email = $1',
-      [email.toLowerCase()]
-    );
-
-    if (existingEmail.rows.length > 0) {
-      return res.status(409).json({ error: 'Email already registered' });
-    }
-
-    const existingUsername = await query(
-      'SELECT id FROM profiles WHERE username = $1',
-      [username.toLowerCase()]
-    );
-
-    if (existingUsername.rows.length > 0) {
-      return res.status(409).json({ error: 'Username already taken' });
+    const existingUser = await query('SELECT id FROM users WHERE email = $1 OR username = $2', [email, username]);
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({ error: 'User already exists' });
     }
 
     const userId = uuidv4();
-    const passwordHash = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    await transaction(async (client) => {
-      await client.query(
-        `INSERT INTO users (id, email, password_hash, created_at, updated_at)
-         VALUES ($1, $2, $3, NOW(), NOW())`,
-        [userId, email.toLowerCase(), passwordHash]
-      );
+    await query(
+      'INSERT INTO users (id, email, password_hash, username, created_at) VALUES ($1, $2, $3, $4, NOW())',
+      [userId, email, hashedPassword, username]
+    );
 
-      await client.query(
-        `INSERT INTO profiles (user_id, username, display_name, created_at, updated_at)
-         VALUES ($1, $2, $3, NOW(), NOW())`,
-        [userId, username.toLowerCase(), displayName || username]
-      );
+    await query(
+      'INSERT INTO profiles (user_id, username, display_name, is_public) VALUES ($1, $2, $3, true)',
+      [userId, username, displayName || username]
+    );
 
-      await client.query(
-        `INSERT INTO user_stats (user_id, created_at, updated_at)
-         VALUES ($1, NOW(), NOW())`,
-        [userId]
-      );
+    await query(
+      'INSERT INTO user_stats (user_id, total_pomodoros, total_focus_time, current_streak, longest_streak, weekly_pomodoros, monthly_pomodoros) VALUES ($1, 0, 0, 0, 0, 0, 0)',
+      [userId]
+    );
 
-      await client.query(
-        `INSERT INTO user_settings (user_id, durations, goals, settings, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, NOW(), NOW())`,
-        [
-          userId,
-          JSON.stringify({ FOCUS: 25, SHORT: 5, LONG: 15 }),
-          JSON.stringify({ daily: 8, weekly: 40 }),
-          JSON.stringify({}),
-        ]
-      );
-    });
-
-    const token = generateToken(userId);
+    const token = generateToken(userId, email);
 
     return res.status(201).json({
-      token,
       user: {
         id: userId,
-        email: email.toLowerCase(),
-        username: username.toLowerCase(),
+        email,
+        username,
         displayName: displayName || username,
       },
+      token,
     });
   } catch (error) {
     console.error('Registration error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-}
+};

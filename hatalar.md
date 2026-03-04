@@ -329,6 +329,196 @@ const handleSessionComplete = useCallback(() => { ... }, [dependencies]);
 
 ---
 
+---
+
+## 🔍 YENİ TESPİTLER (Detaylı İnceleme)
+
+### 9. ESLint Hataları (Toplam 50+)
+
+#### API Dosyaları
+| Dosya | Hata | Satır |
+|-------|------|-------|
+| `api/_auth.js` | `process` not defined | 3 |
+| `api/_auth.js` | `error` unused | 12, 34, 52 |
+| `api/_db.js` | `process` not defined | 4 |
+| `api/friends.js` | `transaction` unused | 1 |
+| `api/rooms/[id].js` | `transaction`, `authMiddleware`, `optionalAuthMiddleware` unused | 1-2 |
+| `api/rooms/index.js` | `authMiddleware` unused | 2 |
+
+#### Context Dosyaları
+| Dosya | Hata | Satır |
+|-------|------|-------|
+| `src/contexts/AuthContext.jsx` | setState in effect | 13 |
+| `src/contexts/AuthContext.jsx` | Fast refresh only exports components | 159 |
+| `src/contexts/SyncContext.jsx` | `processOfflineQueue` accessed before declared | 40 |
+| `src/contexts/SyncContext.jsx` | `isSupabaseConfigured` unused | 2 |
+
+#### Component Dosyaları
+| Dosya | Hata | Satır |
+|-------|------|-------|
+| `src/components/CloudBackupSettings.jsx` | `motion` unused, `err` unused | 2, 63, 77 |
+| `src/components/ConflictResolver.jsx` | `motion` unused, `syncStatus` unused | 2, 8 |
+| `src/components/EmailReportSettings.jsx` | `useEffect` unused, `motion` unused | 1, 2 |
+| `src/components/ExportButtons.jsx` | `motion` unused | 3 |
+| `src/components/FriendList.jsx` | `motion` unused | 2 |
+| `src/components/PWAInstallPrompt.jsx` | `motion` unused | 2 |
+| `src/components/ShareProfileButton.jsx` | `motion` unused, `userProfileService` unused | 2, 6 |
+| `src/components/SyncStatus.jsx` | `motion` unused | 2 |
+| `src/components/UserSearch.jsx` | `motion` unused | 2 |
+
+#### Report Component'leri
+| Dosya | Hata | Satır |
+|-------|------|-------|
+| `src/components/reports/ProductivityReport.jsx` | `motion` unused, `Icon` unused | 2, 267 |
+| `src/components/reports/ProjectReport.jsx` | `motion` unused | 2 |
+| `src/components/reports/TimeDistributionReport.jsx` | `motion` unused, `Icon` unused | 2, 299 |
+
+---
+
+### 10. React 19 Purity Kuralları İhlalleri
+
+| Konum | Sorun | Açıklama |
+|-------|-------|----------|
+| `src/App.jsx:837-840` | `Math.random()` in render | Component render sırasında impure fonksiyon çağrısı |
+| `src/App.jsx:557` | Missing dependencies | `useEffect` içinde `toggleMuteAll`, `toggleTimer` eksik |
+| `src/App.jsx:112` | Fast refresh | Context export ve component aynı dosyada |
+
+**Çözüm Önerisi:**
+```javascript
+// Rain drops için random değerleri useEffect ile hazırla
+const [rainDrops, setRainDrops] = useState([]);
+
+useEffect(() => {
+  setRainDrops(
+    Array.from({ length: 80 }, () => ({
+      left: Math.random() * 100,
+      duration: 0.5 + Math.random() * 0.5,
+      delay: Math.random() * 2,
+      opacity: 0.1 + Math.random() * 0.4
+    }))
+  );
+}, []);
+
+// Render'da hazır değerleri kullan
+{rainDrops.map((drop, i) => (
+  <div key={i} className="rain-drop" style={{ ... }} />
+))}
+```
+
+---
+
+### 11. Eksik PWA Screenshot Dosyaları
+
+`public/manifest.json` referansları:
+```json
+"screenshots": [
+  { "src": "/screenshot-wide.png", "sizes": "1280x720" },
+  { "src": "/screenshot-narrow.png", "sizes": "750x1334" }
+]
+```
+
+**Durum:** ❌ Dosyalar mevcut değil
+
+---
+
+### 12. Manifest Shortcuts İkon Hatası
+
+`public/manifest.json` Satır 44, 51:
+```json
+"icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+```
+
+**Sorun:** `/icon-192.png` yok, sadece `/icon-192.svg` var
+
+**Çözüm:** SVG → PNG veya `.svg` olarak düzelt
+
+---
+
+### 13. JWT Secret Hardcoded
+
+**Konum:** `api/_auth.js` Satır 3
+```javascript
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+```
+
+**Risk:** 🔴 Production'da zayıf güvenlik
+
+**Çözüm:** `.env` dosyasına ekle:
+```
+JWT_SECRET=your-secure-random-string-here
+```
+
+---
+
+### 14. Database URL Hardcoded
+
+**Konum:** `api/_db.js`
+```javascript
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  // ...
+});
+```
+
+**Durum:** `process.env.DATABASE_URL` tanımlı değil (Vite client-side bundler)
+
+**Çözüm:** API server-side çalışıyorsa `.env` ekle, değilse Neon connection string'i güvenli şekilde yönet
+
+---
+
+### 15. Dev Dist Dosyaları Ignore Edilmemiş
+
+**Konum:** `dev-dist/sw.js`, `dev-dist/workbox-*.js`
+
+**Sorun:** ESLint bu dosyaları lint ediyor (50+ hata)
+
+**Çözüm:** `.gitignore` ve `.eslintignore`'a ekle:
+```
+dev-dist/
+```
+
+---
+
+## 📊 GÜNCEL ÖZET TABLOSU
+
+| Kategori | Açık | Kapalı | Toplam |
+|----------|------|--------|--------|
+| Kritik Hatalar | 3 | 0 | 3 |
+| Önemli Eksiklikler | 6 | 0 | 6 |
+| Kod Kalitesi | 2 | 0 | 2 |
+| Eksik Dosyalar | 5 | 0 | 5 |
+| ESLint Hataları | 50+ | 0 | 50+ |
+| React 19 Purity | 3 | 0 | 3 |
+| Güvenlik | 2 | 0 | 2 |
+| **TOPLAM** | **71+** | **0** | **71+** |
+
+---
+
+## 🎯 GÜNCEL ÖNCELİK SIRALAMASI
+
+### Build Öncesi (Zorunlu)
+1. ✅ `@supabase/supabase-js` yükle
+2. ✅ `neon.md` güvenli hale getir
+3. ✅ `dev-dist/` ignore ekle
+
+### Sprint 1
+4. ✅ ESLint unused import'ları temizle
+5. ✅ `Math.random()` purity hatasını düzelt
+6. ✅ `processOfflineQueue` hoisting düzelt
+7. ✅ Manifest icon path'lerini `.svg` olarak düzelt
+
+### Sprint 2
+8. ✅ Missing CSS sınıflarını ekle
+9. ✅ PWA screenshot'ları oluştur veya manifest'ten kaldır
+10. ✅ JWT_SECRET'i `.env`'e taşı
+
+### Sonraki
+11. ✅ Dynamic Rain, Ses Mikseri, Eksik Sesler
+12. ✅ API dosyalarını düzelt veya kaldır
+
+---
+
 **Raporu Hazırlayan:** AI Assistant  
 **İnceleme Tarihi:** 4 Mart 2026  
-**Proje:** Podomodro v0.0.0
+**Proje:** Podomodro v0.0.0  
+**Son Güncelleme:** Detaylı ESLint + Purity analizi eklendi

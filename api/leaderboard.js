@@ -1,5 +1,5 @@
-import { query } from './_db.js';
-import { optionalAuthMiddleware } from './_auth.js';
+const { query } = require('./_db.js');
+const { optionalAuthMiddleware } = require('./_auth.js');
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -58,8 +58,8 @@ async function getGlobalLeaderboard(period, category, limit) {
     FROM user_stats us
     JOIN profiles p ON us.user_id = p.user_id
     WHERE p.is_public = true
-    ORDER BY us.${orderColumn} DESC NULLS LAST
-    LIMIT $1`,
+    ORDER BY us.\${orderColumn} DESC NULLS LAST
+    LIMIT \$1`,
     [limit]
   );
 
@@ -94,20 +94,20 @@ async function getFriendsLeaderboard(userId, period, category, limit) {
       p.username,
       p.display_name,
       p.avatar_url,
-      CASE WHEN us.user_id = $1 THEN true ELSE false END as is_current_user
+      CASE WHEN us.user_id = \$1 THEN true ELSE false END as is_current_user
     FROM user_stats us
     JOIN profiles p ON us.user_id = p.user_id
-    WHERE us.user_id = $1 
+    WHERE us.user_id = \$1 
        OR us.user_id IN (
          SELECT CASE 
-           WHEN user_id = $1 THEN friend_id 
+           WHEN user_id = \$1 THEN friend_id 
            ELSE user_id 
          END 
          FROM friendships 
-         WHERE (user_id = $1 OR friend_id = $1) AND status = 'accepted'
+         WHERE (user_id = \$1 OR friend_id = \$1) AND status = 'accepted'
        )
-    ORDER BY us.${orderColumn} DESC NULLS LAST
-    LIMIT $2`,
+    ORDER BY us.\${orderColumn} DESC NULLS LAST
+    LIMIT \$2`,
     [userId, limit]
   );
 
@@ -133,11 +133,11 @@ async function getUserRank(userId, period, category) {
 
   const result = await query(
     `SELECT 
-      us.${orderColumn} as user_value,
+      us.\${orderColumn} as user_value,
       (SELECT COUNT(*) + 1 
        FROM user_stats us2 
        JOIN profiles p2 ON us2.user_id = p2.user_id 
-       WHERE p2.is_public = true AND us2.${orderColumn} > us.${orderColumn}
+       WHERE p2.is_public = true AND us2.\${orderColumn} > us.\${orderColumn}
       ) as rank,
       (SELECT COUNT(*) 
        FROM user_stats us3 
@@ -145,7 +145,7 @@ async function getUserRank(userId, period, category) {
        WHERE p3.is_public = true
       ) as total_users
     FROM user_stats us
-    WHERE us.user_id = $1`,
+    WHERE us.user_id = \$1`,
     [userId]
   );
 
@@ -184,4 +184,4 @@ function getValueByCategory(entry, category, period) {
   }
 }
 
-export default optionalAuthMiddleware(handler);
+module.exports = optionalAuthMiddleware(handler);

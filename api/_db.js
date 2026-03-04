@@ -1,13 +1,13 @@
-import { Pool } from '@neondatabase/serverless';
+const { Pool } = require('@neondatabase/serverless');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: true,
-  },
+    rejectUnauthorized: false
+  }
 });
 
-export const query = async (text, params) => {
+async function query(text, params) {
   const client = await pool.connect();
   try {
     const result = await client.query(text, params);
@@ -15,25 +15,10 @@ export const query = async (text, params) => {
   } finally {
     client.release();
   }
-};
+}
 
-export const getClient = async () => {
+async function getClient() {
   return await pool.connect();
-};
+}
 
-export const transaction = async (callback) => {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    const result = await callback(client);
-    await client.query('COMMIT');
-    return result;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-export default pool;
+module.exports = { query, getClient, pool };
