@@ -1812,15 +1812,19 @@ function StatsPage() {
         animate="visible"
       >
         <h1>Statistics</h1>
-        <div className="view-toggle">
+        <div className="stats-view-toggle" role="tablist" aria-label="Statistics range">
           <button 
-            className={viewMode === 'week' ? 'active' : ''} 
+            className={viewMode === 'week' ? 'active' : ''}
+            role="tab"
+            aria-selected={viewMode === 'week'}
             onClick={() => setViewMode('week')}
           >
             Week
           </button>
           <button 
-            className={viewMode === 'month' ? 'active' : ''} 
+            className={viewMode === 'month' ? 'active' : ''}
+            role="tab"
+            aria-selected={viewMode === 'month'}
             onClick={() => setViewMode('month')}
           >
             Month

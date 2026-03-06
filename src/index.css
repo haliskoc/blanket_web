@@ -1823,6 +1823,53 @@ body.theme-rain .rain-overlay {
   margin-bottom: 30px;
 }
 
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stats-header h1 {
+  margin-bottom: 0;
+}
+
+.stats-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(20, 24, 36, 0.86), rgba(12, 15, 23, 0.92));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.stats-view-toggle button {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 18px;
+  min-width: 96px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text-dim);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.stats-view-toggle button:hover {
+  color: var(--text-main);
+}
+
+.stats-view-toggle button.active {
+  color: #fff;
+  background: linear-gradient(135deg, #ff5858, #ff3b3b);
+  box-shadow: 0 8px 16px rgba(255, 59, 59, 0.3);
+}
+
 .stats-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -2216,6 +2263,20 @@ input[type="number"]::-webkit-inner-spin-button {
 
   .stats-summary {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stats-view-toggle {
+    width: 100%;
+  }
+
+  .stats-view-toggle button {
+    flex: 1;
+    min-width: 0;
   }
 
   .badges-grid {
