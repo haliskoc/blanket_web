@@ -179,7 +179,6 @@ export function PWAManager() {
     <>
       <OfflineIndicator />
       <PWAUpdatePrompt />
-      <PWAInstallPrompt />
     </>
   );
 }
