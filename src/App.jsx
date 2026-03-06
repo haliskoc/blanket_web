@@ -1502,7 +1502,10 @@ function TasksPage() {
                       <div className="task-main">
                         <div 
                           className={`task-checkbox ${todo.completed ? 'checked' : ''}`}
-                          style={{ borderColor: project.color, background: todo.completed ? project.color : 'transparent' }}
+                          style={{
+                            borderColor: todo.completed ? project.color : 'rgba(255,255,255,0.24)',
+                            background: todo.completed ? project.color : 'transparent'
+                          }}
                           onClick={() => toggleTodo(todo.id)}
                         >
                           {todo.completed && <Check size={12} />}
@@ -1683,7 +1686,12 @@ function TasksPage() {
                 <div key={st.id} className="subtask-preview-item">
                   <Circle size={12} />
                   <span>{st.text}</span>
-                  <button onClick={() => setNewSubtasks(newSubtasks.filter((_, idx) => idx !== i))}>
+                  <button
+                    className="subtask-preview-remove"
+                    onClick={() => setNewSubtasks(newSubtasks.filter((_, idx) => idx !== i))}
+                    type="button"
+                    aria-label={`Remove subtask ${st.text}`}
+                  >
                     <X size={12} />
                   </button>
                 </div>

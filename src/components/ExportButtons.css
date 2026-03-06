@@ -1,0 +1,190 @@
+.export-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+  cursor: pointer;
+}
+
+.export-btn:focus-visible,
+.export-dropdown-trigger:focus-visible,
+.export-dropdown-item:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 2px;
+}
+
+.export-btn.is-disabled,
+.export-dropdown-trigger.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.export-btn--small {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.export-btn--medium {
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.export-btn--large {
+  padding: 10px 18px;
+  font-size: 16px;
+}
+
+.export-buttons--small .export-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.export-buttons--medium .export-btn {
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.export-buttons--large .export-btn {
+  padding: 10px 18px;
+  font-size: 16px;
+}
+
+.export-buttons--default .export-btn--csv {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #34d399;
+}
+
+.export-buttons--default .export-btn--csv:hover:not(.is-disabled) {
+  background: rgba(16, 185, 129, 0.32);
+}
+
+.export-buttons--default .export-btn--pdf {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.42);
+  color: #f87171;
+}
+
+.export-buttons--default .export-btn--pdf:hover:not(.is-disabled) {
+  background: rgba(239, 68, 68, 0.28);
+}
+
+.export-buttons--outline .export-btn--csv {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.export-buttons--outline .export-btn--csv:hover:not(.is-disabled) {
+  background: rgba(16, 185, 129, 0.16);
+}
+
+.export-buttons--outline .export-btn--pdf {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.export-buttons--outline .export-btn--pdf:hover:not(.is-disabled) {
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.export-buttons--ghost .export-btn {
+  background: transparent;
+  border-color: transparent;
+}
+
+.export-buttons--ghost .export-btn--csv {
+  color: #34d399;
+}
+
+.export-buttons--ghost .export-btn--pdf {
+  color: #f87171;
+}
+
+.export-buttons--ghost .export-btn:hover:not(.is-disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.export-dropdown {
+  position: relative;
+}
+
+.export-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.export-dropdown-trigger:hover:not(.is-disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.export-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  z-index: 40;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(14, 18, 30, 0.96);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.35);
+}
+
+.export-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  background: transparent;
+  border: 0;
+  color: #e5e7eb;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.export-dropdown-item + .export-dropdown-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.export-dropdown-item--csv svg {
+  color: #34d399;
+}
+
+.export-dropdown-item--pdf svg {
+  color: #f87171;
+}
+
+.export-dropdown-item--csv:hover {
+  background: rgba(16, 185, 129, 0.14);
+}
+
+.export-dropdown-item--pdf:hover {
+  background: rgba(239, 68, 68, 0.14);
+}

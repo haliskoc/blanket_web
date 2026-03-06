@@ -23,3 +23,14 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Security - sensitive files
+neon.md
+.env
+.env.local
+.env.*.local
+
+# Dev dist
+.dev-dist/
+dev-dist/
+*.tsbuildinfo

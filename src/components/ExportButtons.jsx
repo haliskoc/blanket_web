@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Download, FileSpreadsheet } from 'lucide-react';
 import { motion } from 'framer-motion';
+import './ExportButtons.css';
 
 /**
  * ExportButtons Component
@@ -18,55 +19,24 @@ const ExportButtons = ({
   variant = 'default',
   className = ''
 }) => {
-  const sizeClasses = {
-    small: {
-      button: 'px-3 py-1.5 text-xs',
-      icon: 14
-    },
-    medium: {
-      button: 'px-4 py-2 text-sm',
-      icon: 16
-    },
-    large: {
-      button: 'px-6 py-3 text-base',
-      icon: 18
-    }
+  const iconSizes = {
+    small: 14,
+    medium: 16,
+    large: 18
   };
 
-  const variantClasses = {
-    default: {
-      csv: 'bg-green-600 hover:bg-green-700 text-white',
-      pdf: 'bg-red-600 hover:bg-red-700 text-white'
-    },
-    outline: {
-      csv: 'border-2 border-green-600 text-green-600 hover:bg-green-50',
-      pdf: 'border-2 border-red-600 text-red-600 hover:bg-red-50'
-    },
-    ghost: {
-      csv: 'text-green-600 hover:bg-green-50',
-      pdf: 'text-red-600 hover:bg-red-50'
-    }
-  };
-
-  const sizes = sizeClasses[size];
-  const variants = variantClasses[variant];
+  const iconSize = iconSizes[size] || 16;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`export-buttons export-buttons--${size} export-buttons--${variant} ${className}`.trim()}>
       <motion.button
         onClick={onCSVExport}
         disabled={csvDisabled}
         whileHover={{ scale: csvDisabled ? 1 : 1.02 }}
         whileTap={{ scale: csvDisabled ? 1 : 0.98 }}
-        className={`
-          flex items-center gap-2 rounded-lg font-medium
-          transition-colors duration-200
-          ${sizes.button}
-          ${variants.csv}
-          ${csvDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
+        className={`export-btn export-btn--csv ${csvDisabled ? 'is-disabled' : ''}`.trim()}
       >
-        <FileSpreadsheet size={sizes.icon} />
+        <FileSpreadsheet size={iconSize} />
         <span>{csvLabel}</span>
       </motion.button>
 
@@ -75,15 +45,9 @@ const ExportButtons = ({
         disabled={pdfDisabled}
         whileHover={{ scale: pdfDisabled ? 1 : 1.02 }}
         whileTap={{ scale: pdfDisabled ? 1 : 0.98 }}
-        className={`
-          flex items-center gap-2 rounded-lg font-medium
-          transition-colors duration-200
-          ${sizes.button}
-          ${variants.pdf}
-          ${pdfDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
+        className={`export-btn export-btn--pdf ${pdfDisabled ? 'is-disabled' : ''}`.trim()}
       >
-        <FileText size={sizes.icon} />
+        <FileText size={iconSize} />
         <span>{pdfLabel}</span>
       </motion.button>
     </div>
@@ -100,12 +64,6 @@ export const CSVExportButton = ({
   size = 'medium',
   className = ''
 }) => {
-  const sizeClasses = {
-    small: 'px-3 py-1.5 text-xs',
-    medium: 'px-4 py-2 text-sm',
-    large: 'px-6 py-3 text-base'
-  };
-
   const iconSizes = {
     small: 14,
     medium: 16,
@@ -118,14 +76,7 @@ export const CSVExportButton = ({
       disabled={disabled}
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
-      className={`
-        flex items-center gap-2 rounded-lg font-medium
-        bg-green-600 hover:bg-green-700 text-white
-        transition-colors duration-200
-        ${sizeClasses[size]}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        ${className}
-      `}
+      className={`export-btn export-btn--csv export-btn--${size} ${disabled ? 'is-disabled' : ''} ${className}`.trim()}
     >
       <Download size={iconSizes[size]} />
       <span>{label}</span>
@@ -143,12 +94,6 @@ export const PDFExportButton = ({
   size = 'medium',
   className = ''
 }) => {
-  const sizeClasses = {
-    small: 'px-3 py-1.5 text-xs',
-    medium: 'px-4 py-2 text-sm',
-    large: 'px-6 py-3 text-base'
-  };
-
   const iconSizes = {
     small: 14,
     medium: 16,
@@ -161,14 +106,7 @@ export const PDFExportButton = ({
       disabled={disabled}
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
-      className={`
-        flex items-center gap-2 rounded-lg font-medium
-        bg-red-600 hover:bg-red-700 text-white
-        transition-colors duration-200
-        ${sizeClasses[size]}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        ${className}
-      `}
+      className={`export-btn export-btn--pdf export-btn--${size} ${disabled ? 'is-disabled' : ''} ${className}`.trim()}
     >
       <Download size={iconSizes[size]} />
       <span>{label}</span>
@@ -201,18 +139,13 @@ export const ExportDropdown = ({
   }, []);
 
   return (
-    <div ref={dropdownRef} className={`relative ${className}`}>
+    <div ref={dropdownRef} className={`export-dropdown ${className}`.trim()}>
       <motion.button
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         whileHover={{ scale: disabled ? 1 : 1.02 }}
         whileTap={{ scale: disabled ? 1 : 0.98 }}
-        className={`
-          flex items-center gap-2 px-4 py-2 rounded-lg font-medium
-          bg-gray-800 hover:bg-gray-700 text-white
-          transition-colors duration-200
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
+        className={`export-dropdown-trigger ${disabled ? 'is-disabled' : ''}`.trim()}
       >
         <Download size={16} />
         <span>{label}</span>
@@ -223,16 +156,16 @@ export const ExportDropdown = ({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
+          className="export-dropdown-menu"
         >
           <button
             onClick={() => {
               onCSVExport?.();
               setIsOpen(false);
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-green-50 text-gray-700 transition-colors"
+            className="export-dropdown-item export-dropdown-item--csv"
           >
-            <FileSpreadsheet size={18} className="text-green-600" />
+            <FileSpreadsheet size={18} />
             <span>Export as CSV</span>
           </button>
           <button
@@ -240,9 +173,9 @@ export const ExportDropdown = ({
               onPDFExport?.();
               setIsOpen(false);
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-gray-700 transition-colors border-t border-gray-100"
+            className="export-dropdown-item export-dropdown-item--pdf"
           >
-            <FileText size={18} className="text-red-600" />
+            <FileText size={18} />
             <span>Export as PDF</span>
           </button>
         </motion.div>
